@@ -22,10 +22,10 @@ export default function TabTwoScreen() {
           />
         </ThemedView>
     <ThemedText type="title" style = {{marginTop: -40}}>UserName</ThemedText>
-    <ThemedText type="default" style = {{marginTop:8, textAlign: 'center' }}>Here goes bio! Blah Blah blah can only be certain lenght question mark?</ThemedText>
+    <ThemedText type="default" style = {{marginTop:8, textAlign: 'center' }}>Here goes bio! Blah Blah blah </ThemedText>
     <SafeAreaView style={styles.followingHeaderContainer}>
-      <ThemedText type="defaultSemiBold" style = {{marginTop: 10}}>Followers</ThemedText>
-      <ThemedText type="defaultSemiBold" style = {{marginTop: 10}}>Followers</ThemedText>
+      <ThemedText type="defaultSemiBold" style = {{marginTop: 10}}>Posts</ThemedText>
+      <ThemedText type="defaultSemiBold" style = {{marginTop: 10}}>Friends</ThemedText>
       </SafeAreaView>
       <SafeAreaView style={styles.followerNumbersContainer}>
       <ThemedText type="defaultSemiBold" style = {{marginTop: 2}}>10</ThemedText>
