@@ -10,7 +10,7 @@ import { IconSymbol } from '@/components/ui/IconSymbol';
 export default function TabTwoScreen() {
   return (
     <ScrollView>
-    /*HEADER!!*/
+    {/*HEADER!!*/}
     <ThemedView style={styles.profileHeader} 
     lightColor='#000000'
     darkColor='#000000' >
@@ -33,12 +33,12 @@ export default function TabTwoScreen() {
       </View>
   </ThemedView>
 
-  /*IDEALLY GRID?!!*/
+  {/*IDEALLY GRID?!!*/}
 
 
 
 
-  
+
   </ScrollView>
   
 
