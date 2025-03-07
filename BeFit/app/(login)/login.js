@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { StyleSheet, TextInput, TouchableOpacity, View, Text, SafeAreaView, Alert } from 'react-native';
 import { useRouter } from 'expo-router';
 import { ThemedView } from '@/components/ThemedView';
+import { ThemedText } from '../../components/ThemedText';
 
 const LoginScreen = () => {
   const router = useRouter();
@@ -25,7 +26,7 @@ const LoginScreen = () => {
     <SafeAreaView style={styles.safeArea}>
       <ThemedView style={styles.container}>
         <View style={styles.contentContainer}>
-          
+        <ThemedText type="title" style = {{marginTop: -40}}>UserName</ThemedText>
             <View style={styles.inputContainer}>
             <TextInput
               style={styles.input}
