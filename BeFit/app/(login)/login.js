@@ -22,11 +22,25 @@ const LoginScreen = () => {
     }
   };
 
+  const gotoCreate = async () => {
+    setLoading(true);
+  
+    try {
+      router.push('./create-account'); //redirects to here when login successful
+    } catch (error) {
+      Alert.alert('Login Failed', 'Invalid credentials. Please try again.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
     <SafeAreaView style={styles.safeArea}>
       <ThemedView style={styles.container}>
+        <SafeAreaView style={styles.logoContainer}>
+        <ThemedText type="BeFit" style = {{marginTop: 100}}>BEFIT</ThemedText>
+          </SafeAreaView>        
         <View style={styles.contentContainer}>
-        <ThemedText type="title" style = {{marginTop: -40}}>UserName</ThemedText>
             <View style={styles.inputContainer}>
             <TextInput
               style={styles.input}
@@ -55,16 +69,21 @@ const LoginScreen = () => {
               onPress={handleLogin}
               disabled={loading}
             >
-              <Text style={styles.buttonText}>
+              <Text style={styles.loginText}>
                 {loading ? 'Loading...' : 'Log in'}
               </Text>
             </TouchableOpacity>
           </View>
-
-
-            <Text style={styles.buttonText}>
-              Create new account
-            </Text>
+          <TouchableOpacity 
+              style={[styles.createAccountButton, loading && styles.buttonDisabled]} 
+              onPress={gotoCreate}
+              disabled={loading}
+            >
+              <Text style={styles.loginText}>
+                {loading ? 'Loading...' : 'Create new account'}
+              </Text>
+            </TouchableOpacity>
+  
         </View>
       </ThemedView>
     </SafeAreaView>
@@ -74,11 +93,11 @@ const LoginScreen = () => {
 const styles = StyleSheet.create({
   safeArea: {
     flex: 1,
-    backgroundColor: '#CDE2D0',
+    backgroundColor: '#FFFFFF',
   },
   container: {
     flex: 1,
-    backgroundColor: '#CDE2D0',
+    backgroundColor: '#FFFFFF',
   },
   contentContainer: {
     flex: 1,
@@ -87,7 +106,7 @@ const styles = StyleSheet.create({
   },
   logoContainer: {
     alignItems: 'center',
-    marginTop: '20%',
+    marginTop: '100',
   },
   logo: {
     width: 120,
@@ -112,9 +131,10 @@ const styles = StyleSheet.create({
     marginBottom: 15,
     fontSize: 16,
     width: '100%',
+    borderWidth: 0.75
   },
   button: {
-    backgroundColor: '#F8B195',
+    backgroundColor: '#000000',
     borderRadius: 25,
     padding: 15,
     alignItems: 'center',
@@ -123,13 +143,12 @@ const styles = StyleSheet.create({
     marginBottom: 20,
     width: '100',
     marginTop: 10,
-
   },
   buttonDisabled: {
     opacity: 0.7,
   },
   createAccountButton: {
-    backgroundColor: '#F8B195',
+    backgroundColor: '#000000',
     borderRadius: 25,
     padding: 15,
     alignItems: 'center',
@@ -139,8 +158,13 @@ const styles = StyleSheet.create({
     width: '200',
 
   },
+  loginText: {
+    color: '#FFFFFF',
+    fontSize: 16,
+    fontWeight: "750",
+  },
   buttonText: {
-    color: '#ffffff',
+    color: '#c1c1c1',
     fontSize: 16,
     fontWeight: "800",
   },
