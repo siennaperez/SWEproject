@@ -1,4 +1,4 @@
-import { StyleSheet, Image, Platform,View, ScrollView } from 'react-native';
+import { StyleSheet, Image, Platform,View, ScrollView, SafeAreaView} from 'react-native';
 
 import { Collapsible } from '@/components/Collapsible';
 import { ExternalLink } from '@/components/ExternalLink';
@@ -23,14 +23,14 @@ export default function TabTwoScreen() {
         </ThemedView>
     <ThemedText type="title" style = {{marginTop: -40}}>UserName</ThemedText>
     <ThemedText type="default" style = {{marginTop:8, textAlign: 'center' }}>Here goes bio! Blah Blah blah can only be certain lenght question mark?</ThemedText>
-    <View style={styles.followingHeaderContainer}>
+    <SafeAreaView style={styles.followingHeaderContainer}>
       <ThemedText type="defaultSemiBold" style = {{marginTop: 10}}>Followers</ThemedText>
       <ThemedText type="defaultSemiBold" style = {{marginTop: 10}}>Followers</ThemedText>
-      </View>
-      <View style={styles.followerNumbersContainer}>
+      </SafeAreaView>
+      <SafeAreaView style={styles.followerNumbersContainer}>
       <ThemedText type="defaultSemiBold" style = {{marginTop: 2}}>10</ThemedText>
       <ThemedText type="defaultSemiBold" style = {{marginTop: 2}}>10</ThemedText>
-      </View>
+      </SafeAreaView>
   </ThemedView>
 
   {/*IDEALLY GRID?!!*/}
