@@ -4,6 +4,7 @@ import { useRouter } from 'expo-router';
 import { ThemedView } from '@/components/ThemedView';
 import { ThemedText } from '../../components/ThemedText';
 
+
 const LoginScreen = () => {
   const router = useRouter();
   const [email, setEmail] = useState('');
@@ -11,27 +12,33 @@ const LoginScreen = () => {
   const [loading, setLoading] = useState(false);
 
   const handleLogin = async () => {
-    setLoading(true);
+    if (!email || !password) {
+      Alert.alert('Error', 'Both username and password are required.');
+      return;
+    }
   
     try {
-      router.push('/explore'); //redirects to here when login successful
+      const response = await fetch('http://10.138.217.191:3000/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ username: email, password }),
+      });
+  
+      const data = await response.json();
+      if (response.ok) {
+        Alert.alert('Success', 'Login successful!');
+        router.push('/explore'); // Redirect to the profile page
+      } else {
+        Alert.alert('Login Failed', data.message);
+      }
     } catch (error) {
-      Alert.alert('Login Failed', 'Invalid credentials. Please try again.');
-    } finally {
-      setLoading(false);
+      console.error('Error during login:', error);
+      Alert.alert('Login Failed', 'Something went wrong. Please try again.');
     }
   };
 
-  const gotoCreate = async () => {
-    setLoading(true);
-  
-    try {
-      router.push('./create-account'); //redirects to here when login successful
-    } catch (error) {
-      Alert.alert('Login Failed', 'Invalid credentials. Please try again.');
-    } finally {
-      setLoading(false);
-    }
+  const gotoCreate = () => {
+    router.push('./create-account');
   };
 
   return (
