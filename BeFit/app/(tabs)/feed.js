@@ -49,8 +49,6 @@ export default function FeedScreen() {
       >
         <Text style={styles.buttonText}>+ Create Post</Text>
       </TouchableOpacity>
-
-      {/* Optional: You can still keep your collapsibles below if you want */}
       </ScrollView>
   );
 }
