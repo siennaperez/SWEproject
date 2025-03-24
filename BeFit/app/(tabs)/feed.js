@@ -1,13 +1,9 @@
 import React, { useState } from 'react';
-import { StyleSheet, Image, Text, TouchableOpacity, Platform, ScrollView } from 'react-native';
+import { View, StyleSheet, Image, Text, TouchableOpacity, ScrollView } from 'react-native';
 import { useRouter } from 'expo-router';
 
-import { Collapsible } from '@/components/Collapsible';
-import { ExternalLink } from '@/components/ExternalLink';
-import ParallaxScrollView from '@/components/ParallaxScrollView';
 import { ThemedText } from '@/components/ThemedText';
 import { ThemedView } from '@/components/ThemedView';
-import { IconSymbol } from '@/components/ui/IconSymbol';
 
 const samplePosts = [
   {
@@ -29,46 +25,62 @@ export default function FeedScreen() {
   const router = useRouter();
 
   return (
-    <ScrollView contentContainerStyle={styles.container}>
-
-      <ThemedView style={styles.titleContainer}>
-        <ThemedText type="title">Workout Feed</ThemedText>
-      </ThemedView>
-
-      {posts.map((item) => (
-        <ThemedView key={item.id} style={styles.postContainer}>
-          <Text style={styles.username}>{item.username}</Text>
-          <Image source={{ uri: item.image }} style={styles.postImage} />
-          <Text style={styles.caption}>{item.caption}</Text>
+    <View style={styles.container}>
+      <View style={styles.header}>
+        <ThemedView style={styles.titleContainer}>
+          <ThemedText type="title">Workout Feed</ThemedText>
         </ThemedView>
-      ))}
+      </View>
 
-      <TouchableOpacity
-        style={styles.button}
-        onPress={() => router.push('/new-post')}
-      >
-        <Text style={styles.buttonText}>+ Create Post</Text>
-      </TouchableOpacity>
+      <ScrollView contentContainerStyle={styles.scrollContainer}>
+        {posts.map((item) => (
+          <ThemedView key={item.id} style={styles.postContainer}>
+            <Text style={styles.username}>{item.username}</Text>
+            <Image source={{ uri: item.image }} style={styles.postImage} />
+            <Text style={styles.caption}>{item.caption}</Text>
+          </ThemedView>
+        ))}
+
+        <TouchableOpacity
+          style={styles.button}
+          onPress={() => router.push('/new-post')}
+        >
+          <Text style={styles.buttonText}>+ Create Post</Text>
+        </TouchableOpacity>
       </ScrollView>
+
+      <View style={styles.footer}>
+        <Text style={styles.footerText}>Footer content</Text>
+      </View>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
-  headerImage: {
-    color: '#808080',
-    bottom: -90,
-    left: -35,
-    position: 'absolute',
+  container: {
+    flex: 1,
+    backgroundColor: '#000',
+    position: 'relative',
+  },
+  header: {
+    paddingTop: 60,
+    paddingBottom: 10,
+    backgroundColor: '#000',
+    alignItems: 'center',
+    borderBottomColor: '#ccc',
+    zIndex: 1,
   },
   titleContainer: {
+    backgroundColor: '#000',
     flexDirection: 'row',
     gap: 8,
-    marginBottom: 20,
-    marginTop: 150,
     paddingHorizontal: 20,
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: 'transparent',
+  },
+  scrollContainer: {
+    paddingBottom: 150, 
+    paddingHorizontal: 10,
   },
   postContainer: {
     marginBottom: 20,
@@ -92,16 +104,39 @@ const styles = StyleSheet.create({
     color: '#555',
   },
   button: {
-    backgroundColor: '#000',
-    padding: 15,
-    borderRadius: 10,
-    alignItems: 'center',
-    margin: 20,
-    marginTop: -20
+    backgroundColor: '#1F51FF',
+    paddingVertical: 15,
+    paddingHorizontal: 30,
+    borderRadius: 30,
+    alignItems: 'center', 
+    justifyContent: 'center',
+    marginHorizontal: 20,
+    marginBottom: 20,
+    elevation: 6,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 4,
   },
   buttonText: {
     color: '#fff',
     fontSize: 16,
     fontWeight: 'bold',
+  },
+  footer: {
+    position: 'absolute',
+    bottom: 0,
+    left: 0,
+    right: 0,
+    padding: 15,
+    backgroundColor: '#fff',
+    borderTopWidth: 1,
+    borderTopColor: '#ccc',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  footerText: {
+    fontSize: 14,
+    color: '#888',
   },
 });
