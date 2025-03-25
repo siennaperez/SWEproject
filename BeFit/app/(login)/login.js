@@ -3,37 +3,53 @@ import { StyleSheet, TextInput, TouchableOpacity, View, Text, SafeAreaView, Aler
 import { useRouter } from 'expo-router';
 import { ThemedView } from '@/components/ThemedView';
 import { ThemedText } from '../../components/ThemedText';
-
+import { useUser } from './userContext'; // Import useUser hook
 
 const LoginScreen = () => {
   const router = useRouter();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
+  const { setUserId } = useUser(); // Use the setUserId from context
 
   const handleLogin = async () => {
     if (!email || !password) {
       Alert.alert('Error', 'Both username and password are required.');
       return;
     }
-  
+
+    setLoading(true);
+
     try {
-      const response = await fetch('http://10.138.217.191:3000/login', {
+      //http://10.138.217.191:3000/login
+      const response = await fetch('http://127.0.0.1:3000/login', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ username: email, password }),
       });
-  
+
       const data = await response.json();
+      
       if (response.ok) {
-        Alert.alert('Success', 'Login successful!');
-        router.push('/explore'); // Redirect to the profile page
+        // Ensure you're using the correct key for user ID from your backend
+        const receivedUserId = data.userId || data._id || data.id;
+        
+        if (receivedUserId) {
+          setUserId(receivedUserId); // Store the userId in global state
+          console.log('Login successful, User ID:', receivedUserId);
+          Alert.alert('Success', 'Login successful!');
+          router.push('/profile'); // Navigate to Profile
+        } else {
+          Alert.alert('Login Failed', 'No user ID received from server');
+        }
       } else {
-        Alert.alert('Login Failed', data.message);
+        Alert.alert('Login Failed', data.message || 'Login unsuccessful');
       }
     } catch (error) {
       console.error('Error during login:', error);
       Alert.alert('Login Failed', 'Something went wrong. Please try again.');
+    } finally {
+      setLoading(false);
     }
   };
 

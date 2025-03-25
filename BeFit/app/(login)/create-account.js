@@ -24,6 +24,7 @@ const CreateAccountScreen = () => {
     console.log('Password:', password);
   
     console.log('Sending request to:', 'http://10.138.217.191:3000/signup');
+    router.push('/profile');
     try {
       const response = await fetch('http://10.138.217.191:3000/signup', {
         method: 'POST',

@@ -4,29 +4,39 @@ import { TextInput, TouchableOpacity, Text, Alert } from 'react-native';
 import { ThemedText } from '@/components/ThemedText';
 import { ThemedView } from '@/components/ThemedView';
 import { IconSymbol } from '@/components/ui/IconSymbol';
+import { useUser } from '../(login)/userContext';
 
 export default function ProfileScreen() {
+  const { userId } = useUser();
   const [userProfile, setUserProfile] = useState({
     username: '',
     bio: '',
     photo: '',
-    followers: 10, // Placeholder for now
-    friends: 10, // Placeholder for now
+    numberOfPosts: 0,
+    friends: 0,
   });
-
+  
   const [isEditing, setIsEditing] = useState(false);
-  const userId = 'USER_ID_HERE'; // Replace with dynamic user ID after login
 
   // Fetch user data from MongoDB
   useEffect(() => {
-    async function fetchProfile() {
-      if (!userId) return;
+    console.log('Current User ID:', userId); // Debug log
 
+    if (!userId) {
+      Alert.alert('Error', 'No user ID found. Please log in again.');
+      return;
+    }
+
+    async function fetchProfile() {
       try {
         const response = await fetch(`http://10.138.217.191:3000/profile/${userId}`);
-        if (!response.ok) throw new Error('Failed to fetch profile');
+        
+        if (!response.ok) {
+          throw new Error('Failed to fetch profile');
+        }
 
         const data = await response.json();
+        console.log('Fetched Profile Data:', data); // Debug log
         setUserProfile(data);
       } catch (error) {
         console.error('Error fetching profile:', error);
