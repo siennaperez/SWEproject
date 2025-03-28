@@ -22,7 +22,7 @@ const LoginScreen = () => {
 
     try {
       //http://10.138.217.191:3000/login
-      const response = await fetch('http://127.0.0.1:3000/login', {
+      const response = await fetch('http://10.20.0.233:3000/login', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ username: email, password }),
