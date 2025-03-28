@@ -30,6 +30,7 @@ export default function ProfileScreen() {
     async function fetchProfile() {
       try {
         const response = await fetch(`http://10.138.217.191:3000/profile/${userId}`);
+        console.log('Response:', response); // Debug log
         
         if (!response.ok) {
           throw new Error('Failed to fetch profile');
@@ -89,11 +90,11 @@ export default function ProfileScreen() {
         {/* Username (Editable) */}
         {isEditing ? (
           <TextInput
-            style={styles.input}
+            style={[styles.input, { color: '#FFFFFF' }]}
             value={userProfile.username}
             onChangeText={(text) => handleInputChange('username', text)}
             placeholder="Enter username"
-            placeholderTextColor="#666"
+            placeholderTextColor="#FFFFFF"
           />
         ) : (
           <ThemedText type="title" style={styles.username} onPress={() => setIsEditing(true)}>
@@ -104,7 +105,7 @@ export default function ProfileScreen() {
         {/* Bio (Editable) */}
         {isEditing ? (
           <TextInput
-            style={[styles.input, styles.multilineInput]}
+            style={[styles.input, styles.multilineInput, {color: '#FFFFFF'}]}
             value={userProfile.bio}
             onChangeText={(text) => handleInputChange('bio', text)}
             placeholder="Enter bio"
