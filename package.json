@@ -8,8 +8,8 @@
     "jsonwebtoken": "^9.0.2",
     "mongodb": "^6.14.2",
     "mongoose": "^8.12.1",
-    "react-native-gesture-handler": "^2.24.0",
-    "react-native-reanimated": "^3.17.1"
+    "expo-image-picker": "~16.0.6",
+    "expo-camera": "~16.0.18"
   },
   "devDependencies": {
     "@faker-js/faker": "^9.6.0",
