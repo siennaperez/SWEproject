@@ -29,7 +29,7 @@ export default function ProfileScreen() {
 
     async function fetchProfile() {
       try {
-        const response = await fetch(`http://10.138.217.191:3000/profile/${userId}`);
+        const response = await fetch(`http://10.20.0.111:3000/profile/${userId}`);
         console.log('Response:', response); // Debug log
 
         if (!response.ok) {
@@ -56,12 +56,17 @@ export default function ProfileScreen() {
   // Save profile updates to MongoDB
   const saveProfile = async () => {
     try {
-      const response = await fetch(`http://10.138.217.191:3000/profile/${userId}`, {
+      const response = await fetch(`http://10.20.0.111:3000/profile`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(userProfile),
+        body: JSON.stringify({
+          userId: userId,  // Ensure the userId is included
+          name: userProfile.username,  // Pass username as name
+          bio: userProfile.bio,  // Include the bio field
+          profilePhoto: userProfile.photo,  // Include the photo URL
+        }),
       });
-
+  
       if (response.ok) {
         Alert.alert('Success', 'Profile updated successfully!');
         setIsEditing(false); // Exit edit mode after saving
@@ -73,7 +78,6 @@ export default function ProfileScreen() {
       Alert.alert('Error', 'Could not update profile.');
     }
   };
-
   return (
     <ScrollView>
       {/* Profile Header */}

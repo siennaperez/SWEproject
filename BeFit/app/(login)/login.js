@@ -21,7 +21,7 @@ const LoginScreen = () => {
     setLoading(true);
 
     try {
-      //http://10.138.217.191:3000/login  10.20.0.255
+      //http://10.138.217.191:3000/login  10.20.0.111
       const response = await fetch('http://10.20.0.111:3000/login', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
