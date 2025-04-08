@@ -31,7 +31,7 @@ export default function ProfileScreen() {
       try {
         const response = await fetch(`http://10.138.217.191:3000/profile/${userId}`);
         console.log('Response:', response); // Debug log
-        
+
         if (!response.ok) {
           throw new Error('Failed to fetch profile');
         }

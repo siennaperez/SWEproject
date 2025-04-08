@@ -111,3 +111,28 @@ app.put('/profile', async (req, res) => {
     res.status(500).json({ message: 'Server error' });
   }
 });
+
+app.get('/profile/:userId', async (req, res) => {
+  try {
+    const { userId } = req.params;
+    
+    // Find user by ID
+    const user = await User.findById(userId);
+    
+    if (!user) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+
+    // Send user data
+    res.status(200).json({
+      username: user.username,
+      bio: user.bio,
+      photo: user.profilePhoto,
+      numberOfPosts: 0, // Replace with actual post count logic if needed
+      friends: 0, // Replace with actual friends count logic if needed
+    });
+  } catch (err) {
+    console.error('Error fetching profile:', err);
+    res.status(500).json({ message: 'Server error' });
+  }
+});
