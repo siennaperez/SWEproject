@@ -12,6 +12,7 @@ const LoginScreen = () => {
   const [loading, setLoading] = useState(false);
   const { setUserId } = useUser(); // Use the setUserId from context
 
+  router.push('/explore');
   const handleLogin = async () => {
     if (!email || !password) {
       Alert.alert('Error', 'Both username and password are required.');

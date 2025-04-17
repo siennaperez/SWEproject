@@ -1,4 +1,35 @@
+// const { MongoClient } = require('mongodb');
+// const uri = "mongodb+srv://elinakocarslan:uwGUyz0xsZSUeN6m@befit.8omrs.mongodb.net/?retryWrites=true&w=majority&appName=BeFit";
 
+// // Create a MongoClient with a MongoClientOptions object to set the Stable API version
+// const client = new MongoClient(uri);
+
+// async function listDatabases(client){
+//     databasesList = await client.db().admin().listDatabases();
+//     console.log("Databases:");
+//     databasesList.databases.forEach(db => console.log(` - ${db.name}`));
+// };
+
+// async function run() {
+//   try {
+//     const database = client.db('sample_mflix');
+//     const movies = database.collection('movies');
+//     // Query for a movie that has the title 'Back to the Future'
+//     const query = { title: 'Back to the Future' };
+//     const movie = await movies.findOne(query);
+//     console.log(movie);
+//     // Connect the client to the server	(optional starting in v4.7)
+//     // await client.connect();
+//     // // Send a ping to confirm a successful connection
+//     // await client.db("admin").command({ ping: 1 });
+//     // console.log("Pinged your deployment. You successfully connected to MongoDB!");
+//     // await  listDatabases(client);
+//   } finally {
+//     // Ensures that the client will close when you finish/error
+//     await client.close();
+//   }
+// }
+// run().catch(console.dir);
 
 const express = require('express');
 const mongoose = require('mongoose');
@@ -30,6 +61,16 @@ const UserSchema = new mongoose.Schema({
 });
 
 const User = mongoose.model('User', UserSchema);
+
+// Post Schema for storing user posts
+const PostSchema = new mongoose.Schema({
+  userId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
+  imageUrl: { type: String, required: true },
+  caption: { type: String },
+  createdAt: { type: Date, default: Date.now }
+});
+
+const Post = mongoose.model('Post', PostSchema);
 
 // Sign-up endpoint
 app.post('/signup', async (req, res) => {
@@ -86,6 +127,39 @@ app.post('/login', async (req, res) => {
     console.log(user._id, "server.js");
   } catch (err) {
     console.error('Error during login:', err);
+    res.status(500).json({ message: 'Server error' });
+  }
+});
+
+// Create a new post endpoint
+app.post('/posts', async (req, res) => {
+  try {
+    const { userId, imageUrl, caption } = req.body;
+
+    // Create new post
+    const newPost = new Post({
+      userId,
+      imageUrl,
+      caption
+    });
+
+    await newPost.save();
+    res.status(201).json({ message: 'Post created successfully', post: newPost });
+  } catch (err) {
+    console.error('Error creating post:', err);
+    res.status(500).json({ message: 'Server error' });
+  }
+});
+
+// Get all posts endpoint
+app.get('/posts', async (req, res) => {
+  try {
+    const posts = await Post.find()
+      .sort({ createdAt: -1 })
+      .populate('userId', 'username');
+    res.json(posts);
+  } catch (err) {
+    console.error('Error fetching posts:', err);
     res.status(500).json({ message: 'Server error' });
   }
 });
