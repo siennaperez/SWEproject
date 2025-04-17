@@ -3,48 +3,37 @@ import { StyleSheet, TextInput, TouchableOpacity, View, Text, SafeAreaView, Aler
 import { useRouter } from 'expo-router';
 import { ThemedView } from '@/components/ThemedView';
 import { ThemedText } from '../../components/ThemedText';
-import { useUser } from './userContext'; // Import useUser hook
 
 const LoginScreen = () => {
   const router = useRouter();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
-  const { setUserId } = useUser(); // Use the setUserId from context
 
-  router.push('/explore');
   const handleLogin = async () => {
     if (!email || !password) {
       Alert.alert('Error', 'Both username and password are required.');
       return;
     }
-
-    setLoading(true);
-
+  
     try {
-      //http://10.138.217.191:3000/login  10.20.0.111
-      const response = await fetch('http://10.20.0.111:3000/login', {
+      setLoading(true);
+      const response = await fetch('http://10.138.217.191:3000/login', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ username: email, password }),
       });
-
+  
       const data = await response.json();
-      
       if (response.ok) {
-        // Ensure you're using the correct key for user ID from your backend
-        const receivedUserId = data.userId || data._id || data.id;
-        
-        if (receivedUserId) {
-          setUserId(receivedUserId); // Store the userId in global state
-          console.log('Login successful, User ID:', receivedUserId);
-          Alert.alert('Success', 'Login successful!');
-          router.push('/profile'); // Navigate to Profile
-        } else {
-          Alert.alert('Login Failed', 'No user ID received from server');
-        }
+        Alert.alert('Success', 'Login successful!', [
+          {
+            text: 'OK',
+            onPress: () => router.push('/explore')
+          }
+        ]);
       } else {
-        Alert.alert('Login Failed', data.message || 'Login unsuccessful');
+        Alert.alert('Login Failed', data.message);
       }
     } catch (error) {
       console.error('Error during login:', error);
@@ -62,10 +51,10 @@ const LoginScreen = () => {
     <SafeAreaView style={styles.safeArea}>
       <ThemedView style={styles.container}>
         <SafeAreaView style={styles.logoContainer}>
-        <ThemedText type="BeFit" style = {{marginTop: 100}}>BEFIT</ThemedText>
-          </SafeAreaView>        
+          <ThemedText type="BeFit" style = {{marginTop: 100}}>BEFIT</ThemedText>
+        </SafeAreaView>        
         <View style={styles.contentContainer}>
-            <View style={styles.inputContainer}>
+          <View style={styles.inputContainer}>
             <TextInput
               style={styles.input}
               placeholder="Email"
@@ -99,15 +88,14 @@ const LoginScreen = () => {
             </TouchableOpacity>
           </View>
           <TouchableOpacity 
-              style={[styles.createAccountButton, loading && styles.buttonDisabled]} 
-              onPress={gotoCreate}
-              disabled={loading}
-            >
-              <Text style={styles.loginText}>
-                {loading ? 'Loading...' : 'Create new account'}
-              </Text>
-            </TouchableOpacity>
-  
+            style={[styles.createAccountButton, loading && styles.buttonDisabled]} 
+            onPress={gotoCreate}
+            disabled={loading}
+          >
+            <Text style={styles.loginText}>
+              {loading ? 'Loading...' : 'Create new account'}
+            </Text>
+          </TouchableOpacity>
         </View>
       </ThemedView>
     </SafeAreaView>
