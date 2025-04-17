@@ -1,10 +1,12 @@
 import React, { useState } from 'react';
-import { View, Text, Button, Image, StyleSheet, Alert } from 'react-native';
+import { View, Text, Button, Image, StyleSheet, Alert, TextInput } from 'react-native';
 import * as ImagePicker from 'expo-image-picker';
 import { useRouter } from 'expo-router';
 
 export default function NewPost() {
   const [image, setImage] = useState<string | null>(null);
+  const [caption, setCaption] = useState('');
+  const [loading, setLoading] = useState(false);
   const router = useRouter();
 
   const requestPermissions = async () => {
@@ -23,6 +25,7 @@ export default function NewPost() {
     const result = await ImagePicker.launchCameraAsync({
       mediaTypes: ImagePicker.MediaTypeOptions.Images,
       quality: 1,
+      base64: true,
     });
 
     if (!result.canceled) {
@@ -34,6 +37,7 @@ export default function NewPost() {
     const result = await ImagePicker.launchImageLibraryAsync({
       mediaTypes: ImagePicker.MediaTypeOptions.Images,
       quality: 1,
+      base64: true,
     });
 
     if (!result.canceled) {
@@ -41,11 +45,47 @@ export default function NewPost() {
     }
   };
 
-  const handlePost = () => {
-    // TODO: Upload `image` to backend and add caption input
-    console.log('Post image:', image);
-    Alert.alert('Post submitted!');
-    router.back(); // Go back to feed
+  const handlePost = async () => {
+    if (!image) {
+      Alert.alert('Error', 'Please select an image first');
+      return;
+    }
+
+    setLoading(true);
+
+    try {
+      // First, upload the image to a cloud storage service
+      // For now, we'll use the local URI as the imageUrl
+      // In a production app, you would upload to a cloud storage service first
+      const imageUrl = image;
+
+      // Create the post
+      const response = await fetch('http://10.138.217.191:3000/posts', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          userId: '65f7a8d4e5c8f21234567890', // Replace with actual user ID from authentication
+          imageUrl,
+          caption,
+        }),
+      });
+
+      const data = await response.json();
+      
+      if (response.ok) {
+        Alert.alert('Success', 'Post created successfully!');
+        router.back(); // Go back to feed
+      } else {
+        throw new Error(data.message || 'Failed to create post');
+      }
+    } catch (error) {
+      console.error('Error creating post:', error);
+      Alert.alert('Error', 'Failed to create post. Please try again.');
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -54,10 +94,19 @@ export default function NewPost() {
 
       {image && <Image source={{ uri: image }} style={styles.image} />}
 
+      <TextInput
+        style={styles.input}
+        placeholder="Write a caption..."
+        value={caption}
+        onChangeText={setCaption}
+        multiline
+        numberOfLines={3}
+      />
+
       <View style={styles.buttonGroup}>
-        <Button title="Take Photo" onPress={takePhoto} />
-        <Button title="Choose from Gallery" onPress={pickImage} />
-        {image && <Button title="Post" onPress={handlePost} />}
+        <Button title="Take Photo" onPress={takePhoto} disabled={loading} />
+        <Button title="Choose from Gallery" onPress={pickImage} disabled={loading} />
+        {image && <Button title={loading ? "Posting..." : "Post"} onPress={handlePost} disabled={loading} />}
       </View>
     </View>
   );
@@ -81,7 +130,18 @@ const styles = StyleSheet.create({
     borderRadius: 10,
     marginBottom: 20,
   },
+  input: {
+    width: '100%',
+    height: 100,
+    borderWidth: 1,
+    borderColor: '#ccc',
+    borderRadius: 8,
+    padding: 10,
+    marginBottom: 20,
+    textAlignVertical: 'top',
+  },
   buttonGroup: {
     gap: 10,
+    width: '100%',
   },
 });

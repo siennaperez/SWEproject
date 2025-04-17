@@ -4,7 +4,6 @@ import { useRouter } from 'expo-router';
 import { ThemedView } from '@/components/ThemedView';
 import { ThemedText } from '../../components/ThemedText';
 
-
 const LoginScreen = () => {
   const router = useRouter();
   const [email, setEmail] = useState('');
@@ -18,6 +17,7 @@ const LoginScreen = () => {
     }
   
     try {
+      setLoading(true);
       const response = await fetch('http://10.138.217.191:3000/login', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -26,14 +26,20 @@ const LoginScreen = () => {
   
       const data = await response.json();
       if (response.ok) {
-        Alert.alert('Success', 'Login successful!');
-        router.push('/explore'); // Redirect to the profile page
+        Alert.alert('Success', 'Login successful!', [
+          {
+            text: 'OK',
+            onPress: () => router.push('/explore')
+          }
+        ]);
       } else {
         Alert.alert('Login Failed', data.message);
       }
     } catch (error) {
       console.error('Error during login:', error);
       Alert.alert('Login Failed', 'Something went wrong. Please try again.');
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -45,10 +51,10 @@ const LoginScreen = () => {
     <SafeAreaView style={styles.safeArea}>
       <ThemedView style={styles.container}>
         <SafeAreaView style={styles.logoContainer}>
-        <ThemedText type="BeFit" style = {{marginTop: 100}}>BEFIT</ThemedText>
-          </SafeAreaView>        
+          <ThemedText type="BeFit" style = {{marginTop: 100}}>BEFIT</ThemedText>
+        </SafeAreaView>        
         <View style={styles.contentContainer}>
-            <View style={styles.inputContainer}>
+          <View style={styles.inputContainer}>
             <TextInput
               style={styles.input}
               placeholder="Email"
@@ -82,15 +88,14 @@ const LoginScreen = () => {
             </TouchableOpacity>
           </View>
           <TouchableOpacity 
-              style={[styles.createAccountButton, loading && styles.buttonDisabled]} 
-              onPress={gotoCreate}
-              disabled={loading}
-            >
-              <Text style={styles.loginText}>
-                {loading ? 'Loading...' : 'Create new account'}
-              </Text>
-            </TouchableOpacity>
-  
+            style={[styles.createAccountButton, loading && styles.buttonDisabled]} 
+            onPress={gotoCreate}
+            disabled={loading}
+          >
+            <Text style={styles.loginText}>
+              {loading ? 'Loading...' : 'Create new account'}
+            </Text>
+          </TouchableOpacity>
         </View>
       </ThemedView>
     </SafeAreaView>

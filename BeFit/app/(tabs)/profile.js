@@ -4,29 +4,40 @@ import { TextInput, TouchableOpacity, Text, Alert } from 'react-native';
 import { ThemedText } from '@/components/ThemedText';
 import { ThemedView } from '@/components/ThemedView';
 import { IconSymbol } from '@/components/ui/IconSymbol';
+import { useUser } from '../(login)/userContext';
 
 export default function ProfileScreen() {
+  const { userId } = useUser();
   const [userProfile, setUserProfile] = useState({
     username: '',
     bio: '',
     photo: '',
-    followers: 10, // Placeholder for now
-    friends: 10, // Placeholder for now
+    numberOfPosts: 0,
+    friends: 0,
   });
-
+  
   const [isEditing, setIsEditing] = useState(false);
-  const userId = 'USER_ID_HERE'; // Replace with dynamic user ID after login
 
   // Fetch user data from MongoDB
   useEffect(() => {
-    async function fetchProfile() {
-      if (!userId) return;
+    console.log('Current User ID:', userId); // Debug log
 
+    if (!userId) {
+      Alert.alert('Error', 'No user ID found. Please log in again.');
+      return;
+    }
+
+    async function fetchProfile() {
       try {
-        const response = await fetch(`http://10.138.217.191:3000/profile/${userId}`);
-        if (!response.ok) throw new Error('Failed to fetch profile');
+        const response = await fetch(`http://10.20.0.111:3000/profile/${userId}`);
+        console.log('Response:', response); // Debug log
+
+        if (!response.ok) {
+          throw new Error('Failed to fetch profile');
+        }
 
         const data = await response.json();
+        console.log('Fetched Profile Data:', data); // Debug log
         setUserProfile(data);
       } catch (error) {
         console.error('Error fetching profile:', error);
@@ -45,12 +56,17 @@ export default function ProfileScreen() {
   // Save profile updates to MongoDB
   const saveProfile = async () => {
     try {
-      const response = await fetch(`http://10.138.217.191:3000/profile/${userId}`, {
+      const response = await fetch(`http://10.20.0.111:3000/profile`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(userProfile),
+        body: JSON.stringify({
+          userId: userId,  // Ensure the userId is included
+          name: userProfile.username,  // Pass username as name
+          bio: userProfile.bio,  // Include the bio field
+          profilePhoto: userProfile.photo,  // Include the photo URL
+        }),
       });
-
+  
       if (response.ok) {
         Alert.alert('Success', 'Profile updated successfully!');
         setIsEditing(false); // Exit edit mode after saving
@@ -62,7 +78,6 @@ export default function ProfileScreen() {
       Alert.alert('Error', 'Could not update profile.');
     }
   };
-
   return (
     <ScrollView>
       {/* Profile Header */}
@@ -79,11 +94,11 @@ export default function ProfileScreen() {
         {/* Username (Editable) */}
         {isEditing ? (
           <TextInput
-            style={styles.input}
+            style={[styles.input, { color: '#FFFFFF' }]}
             value={userProfile.username}
             onChangeText={(text) => handleInputChange('username', text)}
             placeholder="Enter username"
-            placeholderTextColor="#666"
+            placeholderTextColor="#FFFFFF"
           />
         ) : (
           <ThemedText type="title" style={styles.username} onPress={() => setIsEditing(true)}>
@@ -94,7 +109,7 @@ export default function ProfileScreen() {
         {/* Bio (Editable) */}
         {isEditing ? (
           <TextInput
-            style={[styles.input, styles.multilineInput]}
+            style={[styles.input, styles.multilineInput, {color: '#FFFFFF'}]}
             value={userProfile.bio}
             onChangeText={(text) => handleInputChange('bio', text)}
             placeholder="Enter bio"

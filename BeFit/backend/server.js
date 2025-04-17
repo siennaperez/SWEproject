@@ -1,4 +1,3 @@
-
 // const { MongoClient } = require('mongodb');
 // const uri = "mongodb+srv://elinakocarslan:uwGUyz0xsZSUeN6m@befit.8omrs.mongodb.net/?retryWrites=true&w=majority&appName=BeFit";
 
@@ -39,6 +38,7 @@ const jwt = require('jsonwebtoken');
 const app = express();
 const port = 3000;
 
+
 app.use(express.json()); // for parsing application/json
 
 // MongoDB connection URI
@@ -47,7 +47,7 @@ const uri = "mongodb+srv://elinakocarslan:uwGUyz0xsZSUeN6m@befit.8omrs.mongodb.n
 const cors = require('cors');
 app.use(cors());
 
-mongoose.connect(uri, { useNewUrlParser: true, useUnifiedTopology: true, serverSelectionTimeoutMS: 20000 })
+mongoose.connect(uri, { serverSelectionTimeoutMS: 20000 })
   .then(() => console.log('Connected to MongoDB'))
   .catch((err) => console.error('MongoDB connection error:', err));
 
@@ -61,6 +61,16 @@ const UserSchema = new mongoose.Schema({
 });
 
 const User = mongoose.model('User', UserSchema);
+
+// Post Schema for storing user posts
+const PostSchema = new mongoose.Schema({
+  userId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
+  imageUrl: { type: String, required: true },
+  caption: { type: String },
+  createdAt: { type: Date, default: Date.now }
+});
+
+const Post = mongoose.model('Post', PostSchema);
 
 // Sign-up endpoint
 app.post('/signup', async (req, res) => {
@@ -97,10 +107,11 @@ app.post('/login', async (req, res) => {
     console.log('Login request received:', req.body); // Log the received data
 
     // Check if user exists
-    const user = await User.findOne({ username });
+    const user = await User.findOne({ username }, { name: 1, _id: 1, password: 1 });
     if (!user) {
       return res.status(400).json({ message: 'User not found' });
     }
+    console.log('User found:', user);
 
     // Check password
     const isMatch = await bcrypt.compare(password, user.password);
@@ -109,9 +120,46 @@ app.post('/login', async (req, res) => {
     }
 
     // If login is successful
-    res.status(200).json({ message: 'Login successful' });
+    res.status(200).json({ 
+      userId: user._id,   // Send back the user ID
+      userName: user.name 
+    });
+    console.log(user._id, "server.js");
   } catch (err) {
     console.error('Error during login:', err);
+    res.status(500).json({ message: 'Server error' });
+  }
+});
+
+// Create a new post endpoint
+app.post('/posts', async (req, res) => {
+  try {
+    const { userId, imageUrl, caption } = req.body;
+
+    // Create new post
+    const newPost = new Post({
+      userId,
+      imageUrl,
+      caption
+    });
+
+    await newPost.save();
+    res.status(201).json({ message: 'Post created successfully', post: newPost });
+  } catch (err) {
+    console.error('Error creating post:', err);
+    res.status(500).json({ message: 'Server error' });
+  }
+});
+
+// Get all posts endpoint
+app.get('/posts', async (req, res) => {
+  try {
+    const posts = await Post.find()
+      .sort({ createdAt: -1 })
+      .populate('userId', 'username');
+    res.json(posts);
+  } catch (err) {
+    console.error('Error fetching posts:', err);
     res.status(500).json({ message: 'Server error' });
   }
 });
@@ -134,6 +182,31 @@ app.put('/profile', async (req, res) => {
 
     res.json({ message: 'Profile updated!', user: updatedUser });
   } catch (err) {
+    res.status(500).json({ message: 'Server error' });
+  }
+});
+
+app.get('/profile/:userId', async (req, res) => {
+  try {
+    const { userId } = req.params;
+    
+    // Find user by ID
+    const user = await User.findById(userId);
+    
+    if (!user) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+
+    // Send user data
+    res.status(200).json({
+      username: user.username,
+      bio: user.bio,
+      photo: user.profilePhoto,
+      numberOfPosts: 0, // Replace with actual post count logic if needed
+      friends: 0, // Replace with actual friends count logic if needed
+    });
+  } catch (err) {
+    console.error('Error fetching profile:', err);
     res.status(500).json({ message: 'Server error' });
   }
 });
