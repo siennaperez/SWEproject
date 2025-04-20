@@ -5,6 +5,7 @@ import { ThemedText } from '@/components/ThemedText';
 import { ThemedView } from '@/components/ThemedView';
 import { IconSymbol } from '@/components/ui/IconSymbol';
 import { useUser } from '../(login)/userContext';
+import {setUserId} from '../(login)/userContext';
 
 export default function ProfileScreen() {
   const { userId } = useUser();
@@ -29,7 +30,7 @@ export default function ProfileScreen() {
 
     async function fetchProfile() {
       try {
-        const response = await fetch(`http://10.20.0.111:3000/profile/${userId}`);
+        const response = await fetch(`http://10.20.0.4:3000/profile/${userId}`);
         console.log('Response:', response); // Debug log
 
         if (!response.ok) {
@@ -56,7 +57,7 @@ export default function ProfileScreen() {
   // Save profile updates to MongoDB
   const saveProfile = async () => {
     try {
-      const response = await fetch(`http://10.20.0.111:3000/profile`, {
+      const response = await fetch(`http://10.20.0.4:3000/profile`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -77,6 +78,12 @@ export default function ProfileScreen() {
       console.error('Error updating profile:', error);
       Alert.alert('Error', 'Could not update profile.');
     }
+  };
+
+  const handleLogout = () => {
+    setUserId(null);  
+    Alert.alert('Success', 'You have been logged out!');
+    router.push('../login'); 
   };
   return (
     <ScrollView>
@@ -138,6 +145,11 @@ export default function ProfileScreen() {
             <Text style={styles.saveButtonText}>Save</Text>
           </TouchableOpacity>
         )}
+
+        {/* Logout Button */}
+        <TouchableOpacity style={styles.logoutButton} onPress={handleLogout}>
+          <Text style={styles.logoutButtonText}>Log out</Text>
+        </TouchableOpacity>
       </ThemedView>
     </ScrollView>
   );
@@ -199,6 +211,16 @@ const styles = StyleSheet.create({
     marginTop: 10,
   },
   saveButtonText: {
+    color: 'white',
+    fontWeight: 'bold',
+  },
+  logoutButton: {
+    backgroundColor: '#ff4d4d',
+    padding: 10,
+    borderRadius: 5,
+    marginTop: 20,
+  },
+  logoutButtonText: {
     color: 'white',
     fontWeight: 'bold',
   },

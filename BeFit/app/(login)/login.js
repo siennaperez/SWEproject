@@ -3,14 +3,21 @@ import { StyleSheet, TextInput, TouchableOpacity, View, Text, SafeAreaView, Aler
 import { useRouter } from 'expo-router';
 import { ThemedView } from '@/components/ThemedView';
 import { ThemedText } from '../../components/ThemedText';
-import { useUser } from './userContext'; // Import useUser hook
+import { useUser } from './userContext'; 
+// import Constants from 'expo-constants';
+// const { manifest } = Constants;
+
+// const uri = `http://${manifest.debuggerHost
+//   .split(`:`)
+//   .shift()
+//   .concat(`:3000`)}`; 
 
 const LoginScreen = () => {
   const router = useRouter();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
-  const { setUserId } = useUser(); // Use the setUserId from context
+  const { setUserId } = useUser(); 
 
   const handleLogin = async () => {
     if (!email || !password) {
@@ -22,7 +29,7 @@ const LoginScreen = () => {
 
     try {
       //http://10.138.217.191:3000/login  10.20.0.111
-      const response = await fetch('http://10.20.0.111:3000/login', {
+      const response = await fetch('http://10.20.0.4:3000/login', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ username: email, password }),
