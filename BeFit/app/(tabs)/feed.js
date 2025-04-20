@@ -1,28 +1,35 @@
-import React, { useState } from 'react';
-import { View, StyleSheet, Image, Text, TouchableOpacity, ScrollView } from 'react-native';
+import React, { useState, useEffect } from 'react';
+import { View, StyleSheet, Image, Text, TouchableOpacity, ScrollView, RefreshControl } from 'react-native';
 import { useRouter } from 'expo-router';
 
 import { ThemedText } from '@/components/ThemedText';
 import { ThemedView } from '@/components/ThemedView';
 
-const samplePosts = [
-  {
-    id: '1',
-    username: 'fit_john',
-    image: 'https://source.unsplash.com/200x200/?fitness,gym',
-    caption: 'Great workout today! 💪 #StayFit',
-  },
-  {
-    id: '2',
-    username: 'health_anna',
-    image: 'https://source.unsplash.com/200x200/?running,exercise',
-    caption: 'Morning run was amazing! 🏃‍♀️ #CardioTime',
-  },
-];
-
 export default function FeedScreen() {
-  const [posts] = useState(samplePosts);
+  const [posts, setPosts] = useState([]);
+  const [refreshing, setRefreshing] = useState(false);
   const router = useRouter();
+
+  const fetchPosts = async () => {
+    try {
+      const response = await fetch('http://10.138.217.191:3000/posts');
+      if (!response.ok) throw new Error('Failed to fetch posts');
+      const data = await response.json();
+      setPosts(data);
+    } catch (error) {
+      console.error('Error fetching posts:', error);
+    }
+  };
+
+  const onRefresh = async () => {
+    setRefreshing(true);
+    await fetchPosts();
+    setRefreshing(false);
+  };
+
+  useEffect(() => {
+    fetchPosts();
+  }, []);
 
   return (
     <View style={styles.container}>
@@ -32,12 +39,20 @@ export default function FeedScreen() {
         </ThemedView>
       </View>
 
-      <ScrollView contentContainerStyle={styles.scrollContainer}>
+      <ScrollView 
+        contentContainerStyle={styles.scrollContainer}
+        refreshControl={
+          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+        }
+      >
         {posts.map((item) => (
-          <ThemedView key={item.id} style={styles.postContainer}>
-            <Text style={styles.username}>{item.username}</Text>
-            <Image source={{ uri: item.image }} style={styles.postImage} />
-            <Text style={styles.caption}>{item.caption}</Text>
+          <ThemedView key={item._id} style={styles.postContainer}>
+            <Text style={styles.username}>{item.userId?.username || 'Unknown User'}</Text>
+            <Image source={{ uri: item.imageUrl }} style={styles.postImage} />
+            {item.caption && <Text style={styles.caption}>{item.caption}</Text>}
+            <Text style={styles.timestamp}>
+              {new Date(item.createdAt).toLocaleDateString()}
+            </Text>
           </ThemedView>
         ))}
 
@@ -92,16 +107,22 @@ const styles = StyleSheet.create({
   username: {
     fontSize: 18,
     fontWeight: 'bold',
+    marginBottom: 10,
   },
   postImage: {
     width: '100%',
-    height: 200,
+    height: 300,
     borderRadius: 10,
     marginVertical: 10,
   },
   caption: {
     fontSize: 16,
     color: '#555',
+    marginBottom: 10,
+  },
+  timestamp: {
+    fontSize: 12,
+    color: '#888',
   },
   button: {
     backgroundColor: '#1F51FF',
