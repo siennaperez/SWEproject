@@ -5,6 +5,8 @@ import { ThemedText } from '@/components/ThemedText';
 import { ThemedView } from '@/components/ThemedView';
 import { IconSymbol } from '@/components/ui/IconSymbol';
 import { useUser } from '../(login)/userContext';
+import * as ImagePicker from 'expo-image-picker';
+
 
 export default function ProfileScreen() {
   const { userId } = useUser();
@@ -98,17 +100,50 @@ useEffect(() => {
   }
 }, [userId]);
 
-  return (
-<ScrollView contentContainerStyle={{ paddingBottom: 100 }}>
-  {/* Profile Header */}
-  <ThemedView style={styles.profileHeader}>
-    <TouchableOpacity onPress={() => setIsEditing(true)}>
-      {userProfile.photo ? (
-        <Image source={{ uri: userProfile.photo }} style={styles.profileImage} />
-      ) : (
-        <IconSymbol name="person.circle.fill" size={150} color="#808080" />
-      )}
-    </TouchableOpacity>
+const requestPermissions = async () => {
+  const { status } = await ImagePicker.requestCameraPermissionsAsync();
+  const { status: galleryStatus } = await ImagePicker.requestMediaLibraryPermissionsAsync();
+
+  if (status !== 'granted' || galleryStatus !== 'granted') {
+    Alert.alert('Permission required', 'Camera and gallery permissions are required.');
+    return false;
+  }
+
+  return true;
+};
+
+const changeProfilePhoto = async () => {
+  const hasPermission = await requestPermissions();
+  if (!hasPermission) return;
+
+  const result = await ImagePicker.launchImageLibraryAsync({
+    mediaTypes: ImagePicker.MediaTypeOptions.Images,
+    allowsEditing: true,
+    aspect: [1, 1],
+    quality: 1,
+    base64: false,
+  });
+
+  if (!result.canceled) {
+    const uri = result.assets[0].uri;
+    setUserProfile({ ...userProfile, photo: uri });
+  }
+};
+
+//exports for the app, basically all formatting
+return (
+  //scroll view is the entire profile, the posts and editable personal info will scroll
+  <ScrollView contentContainerStyle={{ paddingBottom: 100 }}>
+    {/* profile section */}
+    <ThemedView style={styles.profileHeader}>
+      {/* profile photo with react image picker */}
+      <TouchableOpacity onPress={isEditing ? changeProfilePhoto : () => setIsEditing(true)}>
+        {userProfile.photo ? (
+          <Image source={{ uri: userProfile.photo }} style={styles.profileImage} />
+        ) : (
+          <IconSymbol name="person.circle.fill" size={150} color="#808080" />
+        )}
+      </TouchableOpacity>
 
     {isEditing ? (
       <TextInput
@@ -155,10 +190,6 @@ useEffect(() => {
     )}
   </ThemedView>
 
-  {/* My Posts Section */}
-  {/* <ThemedText type="defaultSemiBold" style={{ textAlign: 'center', marginBottom: 10 }}>
-    My Posts
-  </ThemedText> */}
 
   {userPosts.map((item) => (
     <ThemedView key={item._id} style={feedStyles.postContainer}>
