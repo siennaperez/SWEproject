@@ -5,7 +5,6 @@ import { ThemedText } from '@/components/ThemedText';
 import { ThemedView } from '@/components/ThemedView';
 import { IconSymbol } from '@/components/ui/IconSymbol';
 import { useUser } from '../(login)/userContext';
-import {setUserId} from '../(login)/userContext';
 
 export default function ProfileScreen() {
   const { userId } = useUser();

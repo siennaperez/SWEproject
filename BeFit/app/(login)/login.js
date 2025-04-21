@@ -44,7 +44,9 @@ const LoginScreen = () => {
           console.log('Login successful, User ID:', receivedUserId);
         }
         Alert.alert('Success', 'Login successful!', [
-        router.push('/profile')
+         {text: 'OK',
+          onPress: () => router.push('/profile')}
+        // router.push('/profile')
         ]);
       } else {
         Alert.alert('Login Failed', data.message);
@@ -93,7 +95,7 @@ const LoginScreen = () => {
 
             <TouchableOpacity 
               style={[styles.button, loading && styles.buttonDisabled]} 
-              onPress={handleLogin}
+              onPress={() => handleLogin()}
               disabled={loading}
             >
               <Text style={styles.loginText}>

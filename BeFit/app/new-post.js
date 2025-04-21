@@ -1,10 +1,12 @@
 import React, { useState } from 'react';
-import { View, Text, Button, Image, StyleSheet, Alert, TextInput } from 'react-native';
+import { View, Text, Button, Image, StyleSheet, Alert, TextInput, TouchableWithoutFeedback, Keyboard } from 'react-native';
 import * as ImagePicker from 'expo-image-picker';
 import { useRouter } from 'expo-router';
+import { useUser } from './(login)/userContext';
 
 export default function NewPost() {
-  const [image, setImage] = useState<string | null>(null);
+  const { userId } = useUser();
+  const [image, setImage] = useState(null);
   const [caption, setCaption] = useState('');
   const [loading, setLoading] = useState(false);
   const router = useRouter();
@@ -15,6 +17,13 @@ export default function NewPost() {
       Alert.alert('Permission required', 'Camera permission is required to take a photo.');
       return false;
     }
+
+    const { status: galleryStatus } = await ImagePicker.requestMediaLibraryPermissionsAsync();
+    if (galleryStatus !== 'granted') {
+      Alert.alert('Permission required', 'Gallery permission is required to pick a photo.');
+      return false;
+    }
+
     return true;
   };
 
@@ -23,7 +32,7 @@ export default function NewPost() {
     if (!hasPermission) return;
 
     const result = await ImagePicker.launchCameraAsync({
-      mediaTypes: ImagePicker.MediaTypeOptions.Images,
+      mediaTypes: 'images',
       quality: 1,
       base64: true,
     });
@@ -34,8 +43,11 @@ export default function NewPost() {
   };
 
   const pickImage = async () => {
+    const hasPermission = await requestPermissions();
+    if (!hasPermission) return;
+
     const result = await ImagePicker.launchImageLibraryAsync({
-      mediaTypes: ImagePicker.MediaTypeOptions.Images,
+      mediaTypes: 'images',
       quality: 1,
       base64: true,
     });
@@ -54,26 +66,22 @@ export default function NewPost() {
     setLoading(true);
 
     try {
-      // First, upload the image to a cloud storage service
-      // For now, we'll use the local URI as the imageUrl
-      // In a production app, you would upload to a cloud storage service first
       const imageUrl = image;
 
-      // Create the post
-      const response = await fetch('http://10.138.217.191:3000/posts', {
+      const response = await fetch('http://10.20.0.4:3000/posts', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          userId: '65f7a8d4e5c8f21234567890', // Replace with actual user ID from authentication
+          userId: userId,
           imageUrl,
           caption,
         }),
       });
 
       const data = await response.json();
-      
+
       if (response.ok) {
         Alert.alert('Success', 'Post created successfully!');
         router.back(); // Go back to feed
@@ -89,26 +97,28 @@ export default function NewPost() {
   };
 
   return (
-    <View style={styles.container}>
-      <Text style={styles.title}>Create a New Post</Text>
+    <TouchableWithoutFeedback onPress={() => Keyboard.dismiss()}>
+      <View style={styles.container}>
+        <Text style={styles.title}>Create a New Post</Text>
 
-      {image && <Image source={{ uri: image }} style={styles.image} />}
+        {image && <Image source={{ uri: image }} style={styles.image} />}
 
-      <TextInput
-        style={styles.input}
-        placeholder="Write a caption..."
-        value={caption}
-        onChangeText={setCaption}
-        multiline
-        numberOfLines={3}
-      />
+        <TextInput
+          style={styles.input}
+          placeholder="Write a caption..."
+          value={caption}
+          onChangeText={setCaption}
+          multiline
+          numberOfLines={3}
+        />
 
-      <View style={styles.buttonGroup}>
-        <Button title="Take Photo" onPress={takePhoto} disabled={loading} />
-        <Button title="Choose from Gallery" onPress={pickImage} disabled={loading} />
-        {image && <Button title={loading ? "Posting..." : "Post"} onPress={handlePost} disabled={loading} />}
+        <View style={styles.buttonGroup}>
+          <Button title="Take Photo" onPress={takePhoto} disabled={loading} />
+          <Button title="Choose from Gallery" onPress={pickImage} disabled={loading} />
+          {image && <Button title={loading ? "Posting..." : "Post"} onPress={handlePost} disabled={loading} />}
+        </View>
       </View>
-    </View>
+    </TouchableWithoutFeedback>
   );
 }
 
