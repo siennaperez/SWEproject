@@ -12,7 +12,7 @@ export default function FeedScreen() {
 
   const fetchPosts = async () => {
     try {
-      const response = await fetch('http://10.136.35.145:3000/posts');
+      const response = await fetch('http://10.138.10.93:3000/posts');
       if (!response.ok) throw new Error('Failed to fetch posts');
       const data = await response.json();
       setPosts(data);

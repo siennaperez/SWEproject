@@ -23,10 +23,10 @@ const CreateAccountScreen = () => {
     console.log('Username:', email);
     console.log('Password:', password);
   
-    console.log('Sending request to:', 'http://10.136.35.145:3000/signup');
+    console.log('Sending request to:', 'http://10.138.10.93:3000/signup');
     router.push('/profile');
     try {
-      const response = await fetch('http://10.136.35.145:3000/signup', {
+      const response = await fetch('http://10.138.10.93:3000/signup', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ username: email, password }), // Ensure 'username' is correct

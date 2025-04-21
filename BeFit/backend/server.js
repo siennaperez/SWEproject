@@ -169,7 +169,20 @@ app.listen(port, () => {
 });
 
 
+app.get('/posts/:userId', async (req, res) => {
+  try {
+    const userId = req.params.userId;
 
+    const posts = await Post.find({ userId }) // filter by logged-in user's ID
+      .sort({ createdAt: -1 })
+      .populate('userId', 'username');
+
+    res.json(posts);
+  } catch (err) {
+    console.error('Error fetching user-specific posts:', err);
+    res.status(500).json({ message: 'Server error' });
+  }
+});
 
 
 //new endpoint, when users login they can now edit their profile information 
