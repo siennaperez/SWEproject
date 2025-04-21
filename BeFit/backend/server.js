@@ -168,6 +168,10 @@ app.listen(port, () => {
   console.log(`Server is running on port ${port}`);
 });
 
+
+
+
+
 //new endpoint, when users login they can now edit their profile information 
 app.put('/profile', async (req, res) => {
   try {

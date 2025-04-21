@@ -29,7 +29,7 @@ export default function ProfileScreen() {
 
     async function fetchProfile() {
       try {
-        const response = await fetch(`http://10.20.0.4:3000/profile/${userId}`);
+        const response = await fetch(`http://10.136.35.145:3000/profile/${userId}`);
         console.log('Response:', response); // Debug log
 
         if (!response.ok) {
@@ -56,7 +56,7 @@ export default function ProfileScreen() {
   // Save profile updates to MongoDB
   const saveProfile = async () => {
     try {
-      const response = await fetch(`http://10.20.0.4:3000/profile`, {
+      const response = await fetch(`http://10.136.35.145:3000/profile`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -78,6 +78,26 @@ export default function ProfileScreen() {
       Alert.alert('Error', 'Could not update profile.');
     }
   };
+
+  const [userPosts, setUserPosts] = useState([]);
+
+useEffect(() => {
+  const fetchUserPosts = async () => {
+    try {
+      const response = await fetch(`http://10.136.35.145:3000/posts`);
+      if (!response.ok) throw new Error('Failed to fetch user posts');
+      const data = await response.json();
+      setUserPosts(data);
+    } catch (error) {
+      console.error('Error fetching user posts:', error);
+    }
+  };
+
+  if (userId) {
+    fetchUserPosts();
+  }
+}, [userId]);
+
 
   // const handleLogout = () => {
   //   setUserId(null);  
@@ -149,6 +169,30 @@ export default function ProfileScreen() {
         {/* <TouchableOpacity style={styles.logoutButton} onPress={handleLogout}>
           <Text style={styles.logoutButtonText}>Log out</Text>
         </TouchableOpacity> */}
+        <SafeAreaView style={{ flex: 1 }}>
+  <ThemedText type="defaultSemiBold" style={{ textAlign: 'center', marginBottom: 10 }}>My Posts</ThemedText>
+
+  <ScrollView contentContainerStyle={feedStyles.scrollContainer}>
+    {userPosts.map((item) => (
+      <ThemedView key={item._id} style={feedStyles.postContainer}>
+        <Text style={feedStyles.username}>{item.userId?.username || 'Unknown User'}</Text>
+        <Image source={{ uri: item.imageUrl }} style={feedStyles.postImage} />
+        {item.caption && <Text style={feedStyles.caption}>{item.caption}</Text>}
+        <Text style={feedStyles.timestamp}>
+          {new Date(item.createdAt).toLocaleDateString()}
+        </Text>
+      </ThemedView>
+    ))}
+
+    <TouchableOpacity
+      style={feedStyles.button}
+      onPress={() => router.push('/new-post')}
+    >
+      <Text style={feedStyles.buttonText}>+ Create Post</Text>
+    </TouchableOpacity>
+  </ScrollView>
+</SafeAreaView>
+
       </ThemedView>
     </ScrollView>
   );
@@ -191,6 +235,12 @@ const styles = StyleSheet.create({
     width: '67%',
     marginBottom: 25,
   },
+  personalPostContainer:{
+    alignItems: 'center',
+    color:'#ffffff', 
+
+
+  },
   input: {
     width: '80%',
     padding: 10,
@@ -212,15 +262,59 @@ const styles = StyleSheet.create({
   saveButtonText: {
     color: 'white',
     fontWeight: 'bold',
+  }
+});
+
+const feedStyles = StyleSheet.create({
+  scrollContainer: {
+    paddingBottom: 150,
+    paddingHorizontal: 10,
   },
-  // logoutButton: {
-  //   backgroundColor: '#ff4d4d',
-  //   padding: 10,
-  //   borderRadius: 5,
-  //   marginTop: 20,
-  // },
-  // logoutButtonText: {
-  //   color: 'white',
-  //   fontWeight: 'bold',
-  // },
+  postContainer: {
+    marginBottom: 20,
+    padding: 15,
+    marginHorizontal: 20,
+    borderRadius: 10,
+    backgroundColor: '#f0f0f0',
+  },
+  username: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    marginBottom: 10,
+  },
+  postImage: {
+    width: '100%',
+    height: 300,
+    borderRadius: 10,
+    marginVertical: 10,
+  },
+  caption: {
+    fontSize: 16,
+    color: '#555',
+    marginBottom: 10,
+  },
+  timestamp: {
+    fontSize: 12,
+    color: '#888',
+  },
+  button: {
+    backgroundColor: '#1F51FF',
+    paddingVertical: 15,
+    paddingHorizontal: 30,
+    borderRadius: 30,
+    alignItems: 'center', 
+    justifyContent: 'center',
+    marginHorizontal: 20,
+    marginBottom: 20,
+    elevation: 6,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 4,
+  },
+  buttonText: {
+    color: '#fff',
+    fontSize: 16,
+    fontWeight: 'bold',
+  },
 });

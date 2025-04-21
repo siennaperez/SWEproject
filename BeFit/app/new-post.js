@@ -68,7 +68,7 @@ export default function NewPost() {
     try {
       const imageUrl = image;
 
-      const response = await fetch('http://10.20.0.4:3000/posts', {
+      const response = await fetch('http://10.136.35.145:3000/posts', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
