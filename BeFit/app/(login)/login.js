@@ -24,6 +24,8 @@ const LoginScreen = () => {
       Alert.alert('Error', 'Both username and password are required.');
       return;
     }
+
+    setLoading(true);
   
     try {
       //http://10.138.217.191:3000/login  10.20.0.111
@@ -35,11 +37,14 @@ const LoginScreen = () => {
   
       const data = await response.json();
       if (response.ok) {
+        const receivedUserId = data.userId || data._id || data.id;
+
+        if (receivedUserId) {
+          setUserId(receivedUserId); // Store the userId in global state
+          console.log('Login successful, User ID:', receivedUserId);
+        }
         Alert.alert('Success', 'Login successful!', [
-          {
-            text: 'OK',
-            onPress: () => router.push('/explore')
-          }
+        router.push('/profile')
         ]);
       } else {
         Alert.alert('Login Failed', data.message);

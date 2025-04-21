@@ -80,11 +80,11 @@ export default function ProfileScreen() {
     }
   };
 
-  const handleLogout = () => {
-    setUserId(null);  
-    Alert.alert('Success', 'You have been logged out!');
-    router.push('../login'); 
-  };
+  // const handleLogout = () => {
+  //   setUserId(null);  
+  //   Alert.alert('Success', 'You have been logged out!');
+  //   router.push('../login'); 
+  // };
   return (
     <ScrollView>
       {/* Profile Header */}
@@ -147,9 +147,9 @@ export default function ProfileScreen() {
         )}
 
         {/* Logout Button */}
-        <TouchableOpacity style={styles.logoutButton} onPress={handleLogout}>
+        {/* <TouchableOpacity style={styles.logoutButton} onPress={handleLogout}>
           <Text style={styles.logoutButtonText}>Log out</Text>
-        </TouchableOpacity>
+        </TouchableOpacity> */}
       </ThemedView>
     </ScrollView>
   );
@@ -214,14 +214,14 @@ const styles = StyleSheet.create({
     color: 'white',
     fontWeight: 'bold',
   },
-  logoutButton: {
-    backgroundColor: '#ff4d4d',
-    padding: 10,
-    borderRadius: 5,
-    marginTop: 20,
-  },
-  logoutButtonText: {
-    color: 'white',
-    fontWeight: 'bold',
-  },
+  // logoutButton: {
+  //   backgroundColor: '#ff4d4d',
+  //   padding: 10,
+  //   borderRadius: 5,
+  //   marginTop: 20,
+  // },
+  // logoutButtonText: {
+  //   color: 'white',
+  //   fontWeight: 'bold',
+  // },
 });
