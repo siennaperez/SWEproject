@@ -3,22 +3,33 @@ import { StyleSheet, TextInput, TouchableOpacity, View, Text, SafeAreaView, Aler
 import { useRouter } from 'expo-router';
 import { ThemedView } from '@/components/ThemedView';
 import { ThemedText } from '../../components/ThemedText';
+import { useUser } from './userContext'; 
+// import Constants from 'expo-constants';
+// const { manifest } = Constants;
+
+// const uri = `http://${manifest.debuggerHost
+//   .split(`:`)
+//   .shift()
+//   .concat(`:3000`)}`; 
 
 const LoginScreen = () => {
   const router = useRouter();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
+  const { setUserId } = useUser(); 
 
   const handleLogin = async () => {
     if (!email || !password) {
       Alert.alert('Error', 'Both username and password are required.');
       return;
     }
+
+    setLoading(true);
   
     try {
-      setLoading(true);
-      const response = await fetch('http://10.138.217.191:3000/login', {
+      //http://10.138.217.191:3000/login  10.20.0.111
+      const response = await fetch('http://10.138.10.93:3000/login', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ username: email, password }),
@@ -26,11 +37,16 @@ const LoginScreen = () => {
   
       const data = await response.json();
       if (response.ok) {
+        const receivedUserId = data.userId || data._id || data.id;
+
+        if (receivedUserId) {
+          setUserId(receivedUserId); // Store the userId in global state
+          console.log('Login successful, User ID:', receivedUserId);
+        }
         Alert.alert('Success', 'Login successful!', [
-          {
-            text: 'OK',
-            onPress: () => router.push('/explore')
-          }
+         {text: 'OK',
+          onPress: () => router.push('/profile')}
+        // router.push('/profile')
         ]);
       } else {
         Alert.alert('Login Failed', data.message);
@@ -79,7 +95,7 @@ const LoginScreen = () => {
 
             <TouchableOpacity 
               style={[styles.button, loading && styles.buttonDisabled]} 
-              onPress={handleLogin}
+              onPress={() => handleLogin()}
               disabled={loading}
             >
               <Text style={styles.loginText}>

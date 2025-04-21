@@ -10,9 +10,10 @@ export default function FeedScreen() {
   const [refreshing, setRefreshing] = useState(false);
   const router = useRouter();
 
+
   const fetchPosts = async () => {
     try {
-      const response = await fetch('http://10.138.217.191:3000/posts');
+      const response = await fetch('http://10.138.10.93:3000/posts');
       if (!response.ok) throw new Error('Failed to fetch posts');
       const data = await response.json();
       setPosts(data);
@@ -20,6 +21,7 @@ export default function FeedScreen() {
       console.error('Error fetching posts:', error);
     }
   };
+  
 
   const onRefresh = async () => {
     setRefreshing(true);

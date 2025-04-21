@@ -5,6 +5,8 @@ import { ThemedText } from '@/components/ThemedText';
 import { ThemedView } from '@/components/ThemedView';
 import { IconSymbol } from '@/components/ui/IconSymbol';
 import { useUser } from '../(login)/userContext';
+import * as ImagePicker from 'expo-image-picker';
+
 
 export default function ProfileScreen() {
   const { userId } = useUser();
@@ -29,7 +31,7 @@ export default function ProfileScreen() {
 
     async function fetchProfile() {
       try {
-        const response = await fetch(`http://10.20.0.111:3000/profile/${userId}`);
+        const response = await fetch(`http://10.138.10.93:3000/profile/${userId}`);
         console.log('Response:', response); // Debug log
 
         if (!response.ok) {
@@ -56,7 +58,7 @@ export default function ProfileScreen() {
   // Save profile updates to MongoDB
   const saveProfile = async () => {
     try {
-      const response = await fetch(`http://10.20.0.111:3000/profile`, {
+      const response = await fetch(`http://10.138.10.93:3000/profile`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -78,68 +80,136 @@ export default function ProfileScreen() {
       Alert.alert('Error', 'Could not update profile.');
     }
   };
-  return (
-    <ScrollView>
-      {/* Profile Header */}
-      <ThemedView style={styles.profileHeader}>
-        {/* Profile Image */}
-        <TouchableOpacity onPress={() => setIsEditing(true)}>
-          {userProfile.photo ? (
-            <Image source={{ uri: userProfile.photo }} style={styles.profileImage} />
-          ) : (
-            <IconSymbol name="person.circle.fill" size={150} color="#808080" />
-          )}
-        </TouchableOpacity>
 
-        {/* Username (Editable) */}
-        {isEditing ? (
-          <TextInput
-            style={[styles.input, { color: '#FFFFFF' }]}
-            value={userProfile.username}
-            onChangeText={(text) => handleInputChange('username', text)}
-            placeholder="Enter username"
-            placeholderTextColor="#FFFFFF"
-          />
+  const [userPosts, setUserPosts] = useState([]);
+
+useEffect(() => {
+  const fetchUserPosts = async () => {
+    try {
+      const response = await fetch(`http://10.138.10.93:3000/posts/${userId}`);
+      if (!response.ok) throw new Error('Failed to fetch user posts');
+      const data = await response.json();
+      setUserPosts(data);
+    } catch (error) {
+      console.error('Error fetching user posts:', error);
+    }
+  };
+
+  if (userId) {
+    fetchUserPosts();
+  }
+}, [userId]);
+
+const requestPermissions = async () => {
+  const { status } = await ImagePicker.requestCameraPermissionsAsync();
+  const { status: galleryStatus } = await ImagePicker.requestMediaLibraryPermissionsAsync();
+
+  if (status !== 'granted' || galleryStatus !== 'granted') {
+    Alert.alert('Permission required', 'Camera and gallery permissions are required.');
+    return false;
+  }
+
+  return true;
+};
+
+const changeProfilePhoto = async () => {
+  const hasPermission = await requestPermissions();
+  if (!hasPermission) return;
+
+  const result = await ImagePicker.launchImageLibraryAsync({
+    mediaTypes: ImagePicker.MediaTypeOptions.Images,
+    allowsEditing: true,
+    aspect: [1, 1],
+    quality: 1,
+    base64: false,
+  });
+
+  if (!result.canceled) {
+    const uri = result.assets[0].uri;
+    setUserProfile({ ...userProfile, photo: uri });
+  }
+};
+
+//exports for the app, basically all formatting
+return (
+  //scroll view is the entire profile, the posts and editable personal info will scroll
+  <ScrollView contentContainerStyle={{ paddingBottom: 100 }}>
+    {/* profile section */}
+    <ThemedView style={styles.profileHeader}>
+      {/* profile photo with react image picker */}
+      <TouchableOpacity onPress={isEditing ? changeProfilePhoto : () => setIsEditing(true)}>
+        {userProfile.photo ? (
+          <Image source={{ uri: userProfile.photo }} style={styles.profileImage} />
         ) : (
-          <ThemedText type="title" style={styles.username} onPress={() => setIsEditing(true)}>
-            {userProfile.username || 'Username'}
-          </ThemedText>
+          <IconSymbol name="person.circle.fill" size={150} color="#808080" />
         )}
+      </TouchableOpacity>
 
-        {/* Bio (Editable) */}
-        {isEditing ? (
-          <TextInput
-            style={[styles.input, styles.multilineInput, {color: '#FFFFFF'}]}
-            value={userProfile.bio}
-            onChangeText={(text) => handleInputChange('bio', text)}
-            placeholder="Enter bio"
-            placeholderTextColor="#666"
-            multiline
-          />
-        ) : (
-          <ThemedText type="default" style={styles.bio} onPress={() => setIsEditing(true)}>
-            {userProfile.bio || 'Tap to add a bio!'}
-          </ThemedText>
-        )}
+    {isEditing ? (
+      <TextInput
+        style={[styles.input, { color: '#FFFFFF' }]}
+        value={userProfile.username}
+        onChangeText={(text) => handleInputChange('username', text)}
+        placeholder="Enter username"
+        placeholderTextColor="#FFFFFF"
+      />
+    ) : (
+      <ThemedText type="title" style={styles.username} onPress={() => setIsEditing(true)}>
+        {userProfile.username || 'Username'}
+      </ThemedText>
+    )}
 
-        {/* Follower & Friends Count */}
-        <SafeAreaView style={styles.followingHeaderContainer}>
-          <ThemedText type="defaultSemiBold">Posts</ThemedText>
-          <ThemedText type="defaultSemiBold">Friends</ThemedText>
-        </SafeAreaView>
-        <SafeAreaView style={styles.followerNumbersContainer}>
-          <ThemedText type="defaultSemiBold">{userProfile.followers}</ThemedText>
-          <ThemedText type="defaultSemiBold">{userProfile.friends}</ThemedText>
-        </SafeAreaView>
+    {isEditing ? (
+      <TextInput
+        style={[styles.input, styles.multilineInput, { color: '#FFFFFF' }]}
+        value={userProfile.bio}
+        onChangeText={(text) => handleInputChange('bio', text)}
+        placeholder="Enter bio"
+        placeholderTextColor="#666"
+        multiline
+      />
+    ) : (
+      <ThemedText type="default" style={styles.bio} onPress={() => setIsEditing(true)}>
+        {userProfile.bio || 'Tap to add a bio!'}
+      </ThemedText>
+    )}
 
-        {/* Save Button (Only visible when editing) */}
-        {isEditing && (
-          <TouchableOpacity style={styles.saveButton} onPress={saveProfile}>
-            <Text style={styles.saveButtonText}>Save</Text>
-          </TouchableOpacity>
-        )}
-      </ThemedView>
-    </ScrollView>
+    <SafeAreaView style={styles.followingHeaderContainer}>
+      <ThemedText type="defaultSemiBold">Posts</ThemedText>
+      <ThemedText type="defaultSemiBold">Friends</ThemedText>
+    </SafeAreaView>
+    <SafeAreaView style={styles.followerNumbersContainer}>
+      <ThemedText type="defaultSemiBold">{userProfile.followers}</ThemedText>
+      <ThemedText type="defaultSemiBold">{userProfile.friends}</ThemedText>
+    </SafeAreaView>
+
+    {isEditing && (
+      <TouchableOpacity style={styles.saveButton} onPress={saveProfile}>
+        <Text style={styles.saveButtonText}>Save</Text>
+      </TouchableOpacity>
+    )}
+  </ThemedView>
+
+
+  {userPosts.map((item) => (
+    <ThemedView key={item._id} style={feedStyles.postContainer}>
+      <Text style={feedStyles.username}>{item.userId?.username || 'Unknown User'}</Text>
+      <Image source={{ uri: item.imageUrl }} style={feedStyles.postImage} />
+      {item.caption && <Text style={feedStyles.caption}>{item.caption}</Text>}
+      <Text style={feedStyles.timestamp}>
+        {new Date(item.createdAt).toLocaleDateString()}
+      </Text>
+    </ThemedView>
+  ))}
+
+  <TouchableOpacity
+    style={feedStyles.button}
+    onPress={() => router.push('/new-post')}
+  >
+    <Text style={feedStyles.buttonText}>+ Create Post</Text>
+  </TouchableOpacity>
+</ScrollView>
+
   );
 }
 
@@ -147,7 +217,7 @@ const styles = StyleSheet.create({
   profileHeader: {
     alignItems: 'center',
     paddingTop: 50,
-    marginBottom: 20,
+    marginBottom: 5,
   },
   profileImage: {
     width: 150,
@@ -178,7 +248,13 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     alignItems: 'center',
     width: '67%',
-    marginBottom: 25,
+    marginBottom: 15,
+  },
+  personalPostContainer:{
+    alignItems: 'center',
+    color:'#ffffff', 
+
+
   },
   input: {
     width: '80%',
@@ -200,6 +276,60 @@ const styles = StyleSheet.create({
   },
   saveButtonText: {
     color: 'white',
+    fontWeight: 'bold',
+  }
+});
+
+const feedStyles = StyleSheet.create({
+  scrollContainer: {
+    paddingBottom: 150,
+    width: '100%',
+  },
+  postContainer: {
+    marginBottom: 20,
+    padding: 15,
+    marginHorizontal: 0,
+    borderRadius: 10,
+    backgroundColor: '#f0f0f0',
+  },
+  username: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    marginBottom: 10,
+  },
+  postImage: {
+    width: '100%',
+    height: 300,
+    borderRadius: 10,
+    marginVertical: 10,
+  },
+  caption: {
+    fontSize: 16,
+    color: '#555',
+    marginBottom: 10,
+  },
+  timestamp: {
+    fontSize: 12,
+    color: '#888',
+  },
+  button: {
+    backgroundColor: '#1F51FF',
+    paddingVertical: 15,
+    paddingHorizontal: 30,
+    borderRadius: 30,
+    alignItems: 'center', 
+    justifyContent: 'center',
+    marginHorizontal: 20,
+    marginBottom: 20,
+    elevation: 6,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 4,
+  },
+  buttonText: {
+    color: '#fff',
+    fontSize: 16,
     fontWeight: 'bold',
   },
 });
