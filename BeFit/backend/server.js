@@ -2,10 +2,8 @@
 const express = require('express');
 const mongoose = require('mongoose');
 const bcrypt = require('bcryptjs');
-const jwt = require('jsonwebtoken');
 const app = express();
 const port = 3000;
-
 
 app.use(express.json()); // for parsing application/json
 
@@ -35,8 +33,10 @@ const PostSchema = new mongoose.Schema({
   userId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
   imageUrl: { type: String, required: true },
   caption: { type: String },
-  createdAt: { type: Date, default: Date.now }
+  createdAt: { type: Date, default: Date.now },
+  createdAtFormatted: {type: String}
 });
+
 
 const Post = mongoose.model('Post', PostSchema);
 

@@ -69,6 +69,11 @@ export default function NewPost() {
 
     try {
       const imageUrl = image;
+      const now = new Date();
+      const createdAtFormatted = now.toLocaleString('en-US', {
+        dateStyle: 'medium',
+        timeStyle: 'short',
+      });
 
       const response = await fetch(`${ip}/posts`, {
         method: 'POST',
@@ -79,6 +84,7 @@ export default function NewPost() {
           userId: userId,
           imageUrl,
           caption,
+          createdAtFormatted,
         }),
       });
 
