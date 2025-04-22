@@ -199,12 +199,15 @@ app.get('/profile/:userId', async (req, res) => {
       return res.status(404).json({ message: 'User not found' });
     }
 
+    // Use exactly the same query as in the posts/:userId endpoint
+    const postCount = await Post.countDocuments({ userId });
+    
     // Send user data
     res.status(200).json({
       username: user.username,
       bio: user.bio,
       photo: user.profilePhoto,
-      numberOfPosts: 0, // Replace with actual post count logic if needed
+      numberOfPosts: postCount,
       friends: 0, // Replace with actual friends count logic if needed
     });
   } catch (err) {
