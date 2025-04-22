@@ -2,18 +2,38 @@
 const express = require('express');
 const mongoose = require('mongoose');
 const bcrypt = require('bcryptjs');
-const jwt = require('jsonwebtoken');
-const app = express();
+const multer = require('multer');
+const path = require('path');
+const fs = require('fs');
+const cors = require('cors');
 const port = 3000;
 
+const app = express();
+const ip = 'http://10.136.226.222:3000';
+
+const uploadsDir = path.join(__dirname, 'uploads');
+if (!fs.existsSync(uploadsDir)) {
+  fs.mkdirSync(uploadsDir);
+}
+
+// Configure multer for file uploads
+const storage = multer.diskStorage({
+  destination: function (req, file, cb) {
+    cb(null, 'uploads/');  // Store uploaded images in the 'uploads' folder
+  },
+  filename: function (req, file, cb) {
+    cb(null, Date.now() + path.extname(file.originalname));  // Generate a unique filename
+  },
+});
+
+const upload = multer({ storage: storage });
 
 app.use(express.json()); // for parsing application/json
+app.use(cors());
+app.use('/uploads', express.static(path.join(__dirname, 'uploads'))); // Serve the uploads directory
 
 // MongoDB connection URI
 const uri = "mongodb+srv://elinakocarslan:uwGUyz0xsZSUeN6m@befit.8omrs.mongodb.net/?retryWrites=true&w=majority&appName=BeFit";
-
-const cors = require('cors');
-app.use(cors());
 
 mongoose.connect(uri, { serverSelectionTimeoutMS: 20000 })
   .then(() => console.log('Connected to MongoDB'))
@@ -39,6 +59,9 @@ const PostSchema = new mongoose.Schema({
 });
 
 const Post = mongoose.model('Post', PostSchema);
+
+//save photo files to folder in database
+app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
 // Sign-up endpoint
 app.post('/signup', async (req, res) => {
@@ -99,39 +122,6 @@ app.post('/login', async (req, res) => {
   }
 });
 
-// Create a new post endpoint
-app.post('/posts', async (req, res) => {
-  try {
-    const { userId, imageUrl, caption } = req.body;
-
-    // Create new post
-    const newPost = new Post({
-      userId,
-      imageUrl,
-      caption
-    });
-
-    await newPost.save();
-    res.status(201).json({ message: 'Post created successfully', post: newPost });
-  } catch (err) {
-    console.error('Error creating post:', err);
-    res.status(500).json({ message: 'Server error' });
-  }
-});
-
-// Get all posts endpoint
-app.get('/posts', async (req, res) => {
-  try {
-    const posts = await Post.find()
-      .sort({ createdAt: -1 })
-      .populate('userId', 'username');
-    res.json(posts);
-  } catch (err) {
-    console.error('Error fetching posts:', err);
-    res.status(500).json({ message: 'Server error' });
-  }
-});
-
 // Search for users by username (for friend search)
 app.get('/users', async (req, res) => {
   try {
@@ -154,6 +144,29 @@ app.listen(port, () => {
 });
 
 
+// Create a new post endpoint
+app.post('/posts', upload.single('image'), async (req, res) => {
+  try {
+    const { userId, caption } = req.body;
+
+    const imageUrl = `${ip}/uploads/${req.file.filename}`; 
+
+    // Create new post
+    const newPost = new Post({
+      userId,
+      imageUrl,
+      caption
+    });
+
+    await newPost.save();
+    res.status(201).json({ message: 'Post created successfully', post: newPost });
+  } catch (err) {
+    console.error('Error creating post:', err);
+    res.status(500).json({ message: 'Server error' });
+  }
+});
+
+//get user specific posts
 app.get('/posts/:userId', async (req, res) => {
   try {
     const userId = req.params.userId;
@@ -169,6 +182,25 @@ app.get('/posts/:userId', async (req, res) => {
   }
 });
 
+app.get('/posts', async (req, res) => {
+  try {
+    const posts = await Post.find()
+      .sort({ createdAt: -1 })
+      .populate('userId', 'username');
+
+    console.log(`Fetched ${posts.length} posts`);
+    
+    // Log a sample post for debugging
+    if (posts.length > 0) {
+      console.log('Sample post imageUrl:', posts[0].imageUrl);
+    }
+    
+    res.json(posts);
+  } catch (err) {
+    console.error('Error fetching posts:', err);
+    res.status(500).json({ message: 'Server error' });
+  }
+});
 
 //new endpoint, when users login they can now edit their profile information 
 app.put('/profile', async (req, res) => {

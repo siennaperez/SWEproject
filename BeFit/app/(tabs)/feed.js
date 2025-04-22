@@ -8,37 +8,54 @@ import { useUser } from '../(login)/userContext';
 import { getIpAddress } from '../(login)/ipConfig'; 
 
 
+
 export default function FeedScreen() {
   const [posts, setPosts] = useState([]);
   const [refreshing, setRefreshing] = useState(false);
+  const [imageErrors, setImageErrors] = useState({});
   const router = useRouter();
-  const { setUserId } = useUser(); 
+  const { userId } = useUser(); 
   const ip = getIpAddress();
 
 
-  const fetchPosts = async () => {
+  const fetchAllPosts = async () => {
     try {
+      console.log("Fetching posts from:", `${ip}/posts`);
       const response = await fetch(`${ip}/posts`);
-      if (!response.ok) throw new Error('Failed to fetch posts');
+      if (!response.ok) throw new Error(`Failed to fetch posts: ${response.status}`);
       const data = await response.json();
+      console.log('Fetched posts:', data); // Log what you're receiving
       setPosts(data);
     } catch (error) {
       console.error('Error fetching posts:', error);
     }
   };
+
+  useEffect(() => {
+    fetchAllPosts();
+  }, []);
+  
+  useEffect(() => {
+    // Log the post data to debug
+    if (posts.length > 0) {
+      console.log("First post imageUrl:", posts[0].imageUrl);
+      console.log("All posts:", posts.map(p => ({id: p._id, imageUrl: p.imageUrl})));
+    }
+  }, [posts]);
   
 
   const onRefresh = async () => {
     setRefreshing(true);
-    await fetchPosts();
+    await fetchAllPosts();
     setRefreshing(false);
   };
 
   useEffect(() => {
-    fetchPosts();
+    fetchAllPosts();
   }, []);
 
   return (
+  
     <View style={styles.container}>
       <View style={styles.header}>
         <ThemedView style={styles.titleContainer}>
@@ -55,7 +72,12 @@ export default function FeedScreen() {
         {posts.map((item) => (
           <ThemedView key={item._id} style={styles.postContainer}>
             <Text style={styles.username}>{item.userId?.username || 'Unknown User'}</Text>
-            <Image source={{ uri: item.imageUrl }} style={styles.postImage} />
+            <View style={styles.imageContainer}>
+            <Image 
+                source={{ uri: item.imageUrl }} 
+                style={styles.postImage}
+              />
+              </View>
             {item.caption && <Text style={styles.caption}>{item.caption}</Text>}
             <Text style={styles.timestamp}>
               {new Date(item.createdAt).toLocaleDateString()}

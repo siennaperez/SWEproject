@@ -68,36 +68,41 @@ export default function NewPost() {
     setLoading(true);
 
     try {
-      const imageUrl = image;
-
+      const formData = new FormData();
+      formData.append('userId', userId);
+      formData.append('caption', caption);
+  
+      // Append the image file from URI
+      formData.append('image', {
+        uri: image,
+        name: 'image.jpg',  // You can set the file name dynamically
+        type: 'image/jpeg',
+      });
+  
       const response = await fetch(`${ip}/posts`, {
         method: 'POST',
+        body: formData,
         headers: {
-          'Content-Type': 'application/json',
+          'Content-Type': 'multipart/form-data',
         },
-        body: JSON.stringify({
-          userId: userId,
-          imageUrl,
-          caption,
-        }),
       });
-
+  
       const data = await response.json();
-
+  
       if (response.ok) {
         Alert.alert('Success', 'Post created successfully!');
-        router.back(); // Go back to feed
+        router.back();  // Go back to feed
       } else {
         throw new Error(data.message || 'Failed to create post');
       }
     } catch (error) {
       console.error('Error creating post:', error);
-      Alert.alert('Error', 'Failed to create post. Please try again.');
+      Alert.alert('Error', `Failed to create post: ${error.message}`);
     } finally {
       setLoading(false);
     }
   };
-
+  
   return (
     <TouchableWithoutFeedback onPress={() => Keyboard.dismiss()}>
       <View style={styles.container}>
