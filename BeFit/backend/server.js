@@ -7,9 +7,11 @@ const path = require('path');
 const fs = require('fs');
 const cors = require('cors');
 const port = 3000;
+const { getIpAddress } = require('../app/(login)/ipConfig'); 
 
 const app = express();
-const ip = 'http://10.136.226.222:3000';
+// const ip = 'http://10.136.226.222:3000';
+const ip = getIpAddress();
 
 const uploadsDir = path.join(__dirname, 'uploads');
 if (!fs.existsSync(uploadsDir)) {
