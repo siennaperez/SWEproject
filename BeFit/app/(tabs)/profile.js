@@ -45,7 +45,15 @@ export default function ProfileScreen() {
 
         const data = await response.json();
         console.log('Fetched Profile Data:', data); // Debug log
-        setUserProfile(data);
+
+        console.log('Number of Posts:', data.numberOfPosts); 
+        setUserProfile({
+          username: data.username,
+          bio: data.bio,
+          photo: data.photo,
+          numberOfPosts: data.numberOfPosts, 
+          friends: 0,
+        });
       } catch (error) {
         console.error('Error fetching profile:', error);
         Alert.alert('Error', 'Could not load profile data.');
@@ -135,7 +143,7 @@ const changeProfilePhoto = async () => {
   }
 };
 
-const maxWords = 50;  // Set a limit for the number of words in the bio
+const maxWords = 25;  // Set a limit for the number of words in the bio
 
 // Function to count words
 const countWords = (text) => {
@@ -207,7 +215,7 @@ return (
       <ThemedText type="defaultSemiBold">Friends</ThemedText>
     </SafeAreaView>
     <SafeAreaView style={styles.followerNumbersContainer}>
-      <ThemedText type="defaultSemiBold">{userProfile.followers}</ThemedText>
+      <ThemedText type="defaultSemiBold">{userProfile.numberOfPosts}</ThemedText>
       <ThemedText type="defaultSemiBold">{userProfile.friends}</ThemedText>
     </SafeAreaView>
 
@@ -279,7 +287,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    width: '67%',
+    width: '72%',
     marginBottom: 15,
   },
   personalPostContainer:{
