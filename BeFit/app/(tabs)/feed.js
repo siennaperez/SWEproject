@@ -67,7 +67,6 @@ export default function FeedScreen() {
   
 
   return (
-  
     <View style={styles.container}>
       <View style={styles.header}>
         <ThemedView style={styles.titleContainer}>
@@ -75,6 +74,7 @@ export default function FeedScreen() {
         </ThemedView>
       </View>
 
+      {}
       <ScrollView 
         contentContainerStyle={styles.scrollContainer}
         refreshControl={
@@ -85,29 +85,26 @@ export default function FeedScreen() {
           <ThemedView key={item._id} style={styles.postContainer}>
             <Text style={styles.username}>{item.userId?.username || 'Unknown User'}</Text>
             <View style={styles.imageContainer}>
-            <Image 
+              <Image 
                 source={{ uri: item.imageUrl }} 
                 style={styles.postImage}
               />
-              </View>
+            </View>
             {item.caption && <Text style={styles.caption}>{item.caption}</Text>}
             <Text style={styles.timestamp}>
               {item.createdAtFormatted || new Date(item.createdAt).toLocaleString()}
             </Text>
           </ThemedView>
         ))}
-
-        <TouchableOpacity
-          style={styles.button}
-          onPress={() => router.push('/new-post')}
-        >
-          <Text style={styles.buttonText}>+ Create Post</Text>
-        </TouchableOpacity>
       </ScrollView>
 
-      <View style={styles.footer}>
-        <Text style={styles.footerText}>Footer content</Text>
-      </View>
+      {/* Floating Button */}
+      <TouchableOpacity
+        style={styles.floatingButton}
+        onPress={() => router.push('/new-post')}
+      >
+        <Text style={styles.floatingButtonText}>+ Create Post</Text>
+      </TouchableOpacity>
     </View>
   );
 }
@@ -116,7 +113,6 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#000',
-    position: 'relative',
   },
   header: {
     paddingTop: 60,
@@ -135,7 +131,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   scrollContainer: {
-    paddingBottom: 150, 
+    paddingBottom: 180,
     paddingHorizontal: 10,
   },
   postContainer: {
@@ -165,40 +161,24 @@ const styles = StyleSheet.create({
     fontSize: 12,
     color: '#888',
   },
-  button: {
+  floatingButton: {
+    position: 'absolute',
+    bottom: 105,
+    right: 20,
     backgroundColor: '#1F51FF',
-    paddingVertical: 15,
+    paddingVertical: 14,
     paddingHorizontal: 30,
     borderRadius: 30,
-    alignItems: 'center', 
-    justifyContent: 'center',
-    marginHorizontal: 20,
-    marginBottom: 20,
-    elevation: 6,
+    elevation: 10,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.3,
     shadowRadius: 4,
+    zIndex: 100,
   },
-  buttonText: {
+  floatingButtonText: {
     color: '#fff',
     fontSize: 16,
     fontWeight: 'bold',
-  },
-  footer: {
-    position: 'absolute',
-    bottom: 0,
-    left: 0,
-    right: 0,
-    padding: 15,
-    backgroundColor: '#fff',
-    borderTopWidth: 1,
-    borderTopColor: '#ccc',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  footerText: {
-    fontSize: 14,
-    color: '#888',
   },
 });
