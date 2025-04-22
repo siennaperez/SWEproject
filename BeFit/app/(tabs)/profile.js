@@ -52,7 +52,7 @@ export default function ProfileScreen() {
           bio: data.bio,
           photo: data.photo,
           numberOfPosts: data.numberOfPosts, 
-          friends: 0,
+          friends: data.friends,
         });
       } catch (error) {
         console.error('Error fetching profile:', error);
