@@ -58,7 +58,7 @@ export default function FeedScreen() {
             <Image source={{ uri: item.imageUrl }} style={styles.postImage} />
             {item.caption && <Text style={styles.caption}>{item.caption}</Text>}
             <Text style={styles.timestamp}>
-              {new Date(item.createdAt).toLocaleDateString()}
+              {item.createdAtFormatted || new Date(item.createdAt).toLocaleString()}
             </Text>
           </ThemedView>
         ))}
