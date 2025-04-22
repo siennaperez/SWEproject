@@ -4,12 +4,16 @@ import { TextInput, TouchableOpacity, Text, Alert } from 'react-native';
 import { ThemedText } from '@/components/ThemedText';
 import { ThemedView } from '@/components/ThemedView';
 import { IconSymbol } from '@/components/ui/IconSymbol';
+import { useRouter } from 'expo-router';
 import { useUser } from '../(login)/userContext';
+import { setUserId } from '../(login)/userContext';
 import * as ImagePicker from 'expo-image-picker';
-
+import { getIpAddress } from '../(login)/ipConfig'; 
 
 export default function ProfileScreen() {
+  const router = useRouter();
   const { userId } = useUser();
+  const { setUserId } = useUser();
   const [userProfile, setUserProfile] = useState({
     username: '',
     bio: '',
@@ -17,6 +21,7 @@ export default function ProfileScreen() {
     numberOfPosts: 0,
     friends: 0,
   });
+  const ip = getIpAddress();
   
   const [isEditing, setIsEditing] = useState(false);
 
@@ -31,7 +36,7 @@ export default function ProfileScreen() {
 
     async function fetchProfile() {
       try {
-        const response = await fetch(`http://10.138.10.93:3000/profile/${userId}`);
+        const response = await fetch(`${ip}/profile/${userId}`);
         console.log('Response:', response); // Debug log
 
         if (!response.ok) {
@@ -58,7 +63,7 @@ export default function ProfileScreen() {
   // Save profile updates to MongoDB
   const saveProfile = async () => {
     try {
-      const response = await fetch(`http://10.138.10.93:3000/profile`, {
+      const response = await fetch(`${ip}/profile`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -86,7 +91,7 @@ export default function ProfileScreen() {
 useEffect(() => {
   const fetchUserPosts = async () => {
     try {
-      const response = await fetch(`http://10.138.10.93:3000/posts/${userId}`);
+      const response = await fetch(`${ip}/posts/${userId}`);
       if (!response.ok) throw new Error('Failed to fetch user posts');
       const data = await response.json();
       setUserPosts(data);
@@ -117,7 +122,7 @@ const changeProfilePhoto = async () => {
   if (!hasPermission) return;
 
   const result = await ImagePicker.launchImageLibraryAsync({
-    mediaTypes: ImagePicker.MediaTypeOptions.Images,
+    mediaTypes: 'images',
     allowsEditing: true,
     aspect: [1, 1],
     quality: 1,
@@ -128,6 +133,29 @@ const changeProfilePhoto = async () => {
     const uri = result.assets[0].uri;
     setUserProfile({ ...userProfile, photo: uri });
   }
+};
+
+const maxWords = 50;  // Set a limit for the number of words in the bio
+
+// Function to count words
+const countWords = (text) => {
+  return text.trim().split(/\s+/).filter(Boolean).length;
+};
+
+// Handle bio input change with word limit check
+const handleBioChange = (text) => {
+  const wordCount = countWords(text);
+  if (wordCount <= maxWords) {
+    setUserProfile({ ...userProfile, bio: text });  // Update bio if word count is within limit
+  } else {
+    Alert.alert('Limit Reached', `You can only enter up to ${maxWords} words.`);
+  }
+};
+
+const handleLogout = () => {
+  setUserId(null); 
+  // setForceRender(prev => !prev); 
+  router.push('/login'); // Assuming your login screen is at '/login'
 };
 
 //exports for the app, basically all formatting
@@ -163,7 +191,7 @@ return (
       <TextInput
         style={[styles.input, styles.multilineInput, { color: '#FFFFFF' }]}
         value={userProfile.bio}
-        onChangeText={(text) => handleInputChange('bio', text)}
+        onChangeText={handleBioChange} 
         placeholder="Enter bio"
         placeholderTextColor="#666"
         multiline
@@ -182,6 +210,10 @@ return (
       <ThemedText type="defaultSemiBold">{userProfile.followers}</ThemedText>
       <ThemedText type="defaultSemiBold">{userProfile.friends}</ThemedText>
     </SafeAreaView>
+
+    <TouchableOpacity style={styles.logoutButton} onPress={handleLogout}>
+        <Text style={styles.logoutButtonText}>Log Out</Text>
+    </TouchableOpacity>
 
     {isEditing && (
       <TouchableOpacity style={styles.saveButton} onPress={saveProfile}>
@@ -277,6 +309,22 @@ const styles = StyleSheet.create({
   saveButtonText: {
     color: 'white',
     fontWeight: 'bold',
+  },
+  logoutButton: {
+    backgroundColor: 'white', 
+    borderRadius: 25,
+    padding: 10,
+    alignItems: 'center',
+    alignContent: 'center',
+    alignSelf: 'center',
+    marginBottom: 20,
+    width: '100%',
+    marginTop: 10,
+  },
+  logoutButtonText: {
+    color: 'black',
+    fontSize: 16,
+    fontWeight: '780',
   }
 });
 

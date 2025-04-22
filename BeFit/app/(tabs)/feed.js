@@ -4,16 +4,21 @@ import { useRouter } from 'expo-router';
 
 import { ThemedText } from '@/components/ThemedText';
 import { ThemedView } from '@/components/ThemedView';
+import { useUser } from '../(login)/userContext'; 
+import { getIpAddress } from '../(login)/ipConfig'; 
+
 
 export default function FeedScreen() {
   const [posts, setPosts] = useState([]);
   const [refreshing, setRefreshing] = useState(false);
   const router = useRouter();
+  const { setUserId } = useUser(); 
+  const ip = getIpAddress();
 
 
   const fetchPosts = async () => {
     try {
-      const response = await fetch('http://10.138.10.93:3000/posts');
+      const response = await fetch(`${ip}/posts`);
       if (!response.ok) throw new Error('Failed to fetch posts');
       const data = await response.json();
       setPosts(data);

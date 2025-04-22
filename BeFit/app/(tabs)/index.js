@@ -3,18 +3,19 @@ import { StyleSheet, TextInput, FlatList, TouchableOpacity, Text } from 'react-n
 import { ThemedText } from '@/components/ThemedText';
 import { ThemedView } from '@/components/ThemedView';
 import ParallaxScrollView from '@/components/ParallaxScrollView';
-
+import { getIpAddress } from '../(login)/ipConfig'; 
 export default function HomeScreen() {
   const [search, setSearch] = useState('');
   const [allUsers, setAllUsers] = useState([]);
   const [friends, setFriends] = useState([]);
   const [results, setResults] = useState([]);
+  const ip = getIpAddress();
 
   const handleSearch = async (text) => {
     setSearch(text);
   
     try {
-      const response = await fetch(`http://10.138.10.93:3000/users?search=${encodeURIComponent(text)}`);
+      const response = await fetch(`${ip}/users?search=${encodeURIComponent(text)}`);
   
       if (!response.ok) {
         const errorText = await response.text();
