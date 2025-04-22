@@ -78,6 +78,7 @@ export default function NewPost() {
         name: 'image.jpg',  // You can set the file name dynamically
         type: 'image/jpeg',
       });
+
         const now = new Date();
       const createdAtFormatted = now.toLocaleString('en-US', {
         dateStyle: 'medium',
@@ -89,13 +90,7 @@ export default function NewPost() {
         body: formData,
         headers: {
           'Content-Type': 'multipart/form-data',
-        },
-        body: JSON.stringify({
-          userId: userId,
-          imageUrl,
-          caption,
-          createdAtFormatted,
-        }),
+        }
       });
   
       const data = await response.json();
