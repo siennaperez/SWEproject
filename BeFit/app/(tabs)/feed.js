@@ -12,13 +12,15 @@ export default function FeedScreen() {
   const [posts, setPosts] = useState([]);
   const [refreshing, setRefreshing] = useState(false);
   const router = useRouter();
-  const { setUserId } = useUser(); 
+  const { userId, setUserId } = useUser();
+ 
   const ip = getIpAddress();
 
 
   const fetchPosts = async () => {
+    if (!userId) return;
     try {
-      const response = await fetch(`${ip}/posts`);
+      const response = await fetch(`${ip}/posts/friends/${userId}`);
       if (!response.ok) throw new Error('Failed to fetch posts');
       const data = await response.json();
       setPosts(data);
@@ -35,8 +37,21 @@ export default function FeedScreen() {
   };
 
   useEffect(() => {
-    fetchPosts();
-  }, []);
+    if (userId) {
+      fetchPosts();
+    }
+  }, [userId]);
+
+  if (!userId) {
+    return (
+      <View style={styles.container}>
+        <Text style={{ marginTop: 100, textAlign: 'center', fontSize: 16 }}>
+          Loading your feed...
+        </Text>
+      </View>
+    );
+  }
+  
 
   return (
     <View style={styles.container}>
