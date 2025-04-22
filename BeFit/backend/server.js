@@ -2,16 +2,40 @@
 const express = require('express');
 const mongoose = require('mongoose');
 const bcrypt = require('bcryptjs');
-const app = express();
+const multer = require('multer');
+const path = require('path');
+const fs = require('fs');
+const cors = require('cors');
 const port = 3000;
+const { getIpAddress } = require('../app/(login)/ipConfig'); 
+
+const app = express();
+// const ip = 'http://10.136.226.222:3000';
+const ip = getIpAddress();
+
+const uploadsDir = path.join(__dirname, 'uploads');
+if (!fs.existsSync(uploadsDir)) {
+  fs.mkdirSync(uploadsDir);
+}
+
+// Configure multer for file uploads
+const storage = multer.diskStorage({
+  destination: function (req, file, cb) {
+    cb(null, 'uploads/');  // Store uploaded images in the 'uploads' folder
+  },
+  filename: function (req, file, cb) {
+    cb(null, Date.now() + path.extname(file.originalname));  // Generate a unique filename
+  },
+});
+
+const upload = multer({ storage: storage });
 
 app.use(express.json()); // for parsing application/json
+app.use(cors());
+app.use('/uploads', express.static(path.join(__dirname, 'uploads'))); // Serve the uploads directory
 
 // MongoDB connection URI
 const uri = "mongodb+srv://elinakocarslan:uwGUyz0xsZSUeN6m@befit.8omrs.mongodb.net/?retryWrites=true&w=majority&appName=BeFit";
-
-const cors = require('cors');
-app.use(cors());
 
 mongoose.connect(uri, { serverSelectionTimeoutMS: 20000 })
   .then(() => console.log('Connected to MongoDB'))
@@ -41,6 +65,9 @@ const PostSchema = new mongoose.Schema({
 
 
 const Post = mongoose.model('Post', PostSchema);
+
+//save photo files to folder in database
+app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
 // Sign-up endpoint
 app.post('/signup', async (req, res) => {
@@ -101,10 +128,34 @@ app.post('/login', async (req, res) => {
   }
 });
 
-// Create a new post endpoint
-app.post('/posts', async (req, res) => {
+// Search for users by username (for friend search)
+app.get('/users', async (req, res) => {
   try {
-    const { userId, imageUrl, caption } = req.body;
+    const search = req.query.search || '';
+    const users = await User.find({
+      username: { $regex: search, $options: 'i' }
+    }).select('username _id'); // Return only username and _id
+
+    res.json(users);
+  } catch (err) {
+    console.error('Error fetching users:', err);
+    res.status(500).json({ message: 'Server error' });
+  }
+});
+
+
+
+app.listen(port, () => {
+  console.log(`Server is running on port ${port}`);
+});
+
+
+// Create a new post endpoint
+app.post('/posts', upload.single('image'), async (req, res) => {
+  try {
+    const { userId, caption } = req.body;
+
+    const imageUrl = `${ip}/uploads/${req.file.filename}`; 
 
     // Create new post
     const newPost = new Post({
@@ -121,12 +172,35 @@ app.post('/posts', async (req, res) => {
   }
 });
 
-// Get all posts endpoint
+//get user specific posts
+app.get('/posts/:userId', async (req, res) => {
+  try {
+    const userId = req.params.userId;
+
+    const posts = await Post.find({ userId }) // filter by logged-in user's ID
+      .sort({ createdAt: -1 })
+      .populate('userId', 'username');
+
+    res.json(posts);
+  } catch (err) {
+    console.error('Error fetching user-specific posts:', err);
+    res.status(500).json({ message: 'Server error' });
+  }
+});
+
 app.get('/posts', async (req, res) => {
   try {
     const posts = await Post.find()
       .sort({ createdAt: -1 })
       .populate('userId', 'username');
+
+    console.log(`Fetched ${posts.length} posts`);
+    
+    // Log a sample post for debugging
+    if (posts.length > 0) {
+      console.log('Sample post imageUrl:', posts[0].imageUrl);
+    }
+    
     res.json(posts);
   } catch (err) {
     console.error('Error fetching posts:', err);
