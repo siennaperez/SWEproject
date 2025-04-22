@@ -1,6 +1,6 @@
 import { StyleSheet, Image, View, ScrollView, SafeAreaView } from 'react-native';
 import React, { useState, useEffect } from 'react';
-import { TextInput, TouchableOpacity, Text, Alert } from 'react-native';
+import { TextInput, TouchableOpacity, Text, Alert, RefreshControl } from 'react-native';
 import { ThemedText } from '@/components/ThemedText';
 import { ThemedView } from '@/components/ThemedView';
 import { IconSymbol } from '@/components/ui/IconSymbol';
@@ -24,6 +24,7 @@ export default function ProfileScreen() {
   const ip = getIpAddress();
   
   const [isEditing, setIsEditing] = useState(false);
+  const [refreshing, setRefreshing] = useState(false);
 
   // Fetch user data from MongoDB
   useEffect(() => {
@@ -166,10 +167,50 @@ const handleLogout = () => {
   router.push('/login'); // Assuming your login screen is at '/login'
 };
 
+const onRefresh = async () => {
+  setRefreshing(true);
+  await Promise.all([
+    (async () => {
+      try {
+        const response = await fetch(`${ip}/profile/${userId}`);
+        if (!response.ok) throw new Error('Failed to fetch profile');
+        const data = await response.json();
+        setUserProfile({
+          username: data.username,
+          bio: data.bio,
+          photo: data.photo,
+          numberOfPosts: data.numberOfPosts,
+          friends: data.friends,
+        });
+      } catch (error) {
+        console.error('Error refreshing profile:', error);
+        Alert.alert('Error', 'Could not refresh profile.');
+      }
+    })(),
+    (async () => {
+      try {
+        const response = await fetch(`${ip}/posts/${userId}`);
+        if (!response.ok) throw new Error('Failed to fetch posts');
+        const data = await response.json();
+        setUserPosts(data);
+      } catch (error) {
+        console.error('Error refreshing posts:', error);
+      }
+    })()
+  ]);
+  setRefreshing(false);
+};
+
+
 //exports for the app, basically all formatting
 return (
   //scroll view is the entire profile, the posts and editable personal info will scroll
-  <ScrollView contentContainerStyle={{ paddingBottom: 100 }}>
+ <ScrollView 
+  contentContainerStyle={{ paddingBottom: 100 }}
+  refreshControl={
+    <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+  }
+  >
     {/* profile section */}
     <ThemedView style={styles.profileHeader}>
       {/* profile photo with react image picker */}
