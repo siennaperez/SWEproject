@@ -239,6 +239,8 @@ app.get('/profile/:userId', async (req, res) => {
 
     // Use exactly the same query as in the posts/:userId endpoint
     const postCount = await Post.countDocuments({ userId });
+    // use the friends array from users to get the number of friends 
+    const friendCount = user.friends.length;
     
     // Send user data
     res.status(200).json({
@@ -246,7 +248,7 @@ app.get('/profile/:userId', async (req, res) => {
       bio: user.bio,
       photo: user.profilePhoto,
       numberOfPosts: postCount,
-      friends: 0, // Replace with actual friends count logic if needed
+      friends: friendCount, 
     });
   } catch (err) {
     console.error('Error fetching profile:', err);
