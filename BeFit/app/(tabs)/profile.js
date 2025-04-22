@@ -4,12 +4,16 @@ import { TextInput, TouchableOpacity, Text, Alert } from 'react-native';
 import { ThemedText } from '@/components/ThemedText';
 import { ThemedView } from '@/components/ThemedView';
 import { IconSymbol } from '@/components/ui/IconSymbol';
+import { useRouter } from 'expo-router';
 import { useUser } from '../(login)/userContext';
+import { setUserId } from '../(login)/userContext';
 import * as ImagePicker from 'expo-image-picker';
 import { getIpAddress } from '../(login)/ipConfig'; 
 
 export default function ProfileScreen() {
+  const router = useRouter();
   const { userId } = useUser();
+  const { setUserId } = useUser();
   const [userProfile, setUserProfile] = useState({
     username: '',
     bio: '',
@@ -148,6 +152,12 @@ const handleBioChange = (text) => {
   }
 };
 
+const handleLogout = () => {
+  setUserId(null); 
+  // setForceRender(prev => !prev); 
+  router.push('/login'); // Assuming your login screen is at '/login'
+};
+
 //exports for the app, basically all formatting
 return (
   //scroll view is the entire profile, the posts and editable personal info will scroll
@@ -200,6 +210,10 @@ return (
       <ThemedText type="defaultSemiBold">{userProfile.followers}</ThemedText>
       <ThemedText type="defaultSemiBold">{userProfile.friends}</ThemedText>
     </SafeAreaView>
+
+    <TouchableOpacity style={styles.logoutButton} onPress={handleLogout}>
+        <Text style={styles.logoutButtonText}>Log Out</Text>
+    </TouchableOpacity>
 
     {isEditing && (
       <TouchableOpacity style={styles.saveButton} onPress={saveProfile}>
@@ -295,6 +309,22 @@ const styles = StyleSheet.create({
   saveButtonText: {
     color: 'white',
     fontWeight: 'bold',
+  },
+  logoutButton: {
+    backgroundColor: 'white', 
+    borderRadius: 25,
+    padding: 10,
+    alignItems: 'center',
+    alignContent: 'center',
+    alignSelf: 'center',
+    marginBottom: 20,
+    width: '100%',
+    marginTop: 10,
+  },
+  logoutButtonText: {
+    color: 'black',
+    fontSize: 16,
+    fontWeight: '780',
   }
 });
 
