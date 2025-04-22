@@ -206,7 +206,7 @@ app.post('/users/:userId/friends/:friendId', async (req, res) => {
     }
 
     // Check if friend is already in the user's friend list
-    if (!user.friends.includes(friendId)) {
+    if (!user.friends.some(f => f.toString() === friendId)) {
       console.log(`Adding friend with ID: ${friendId} to user with ID: ${userId}`);
       user.friends.push(friendId);
       await user.save();
@@ -275,4 +275,28 @@ app.get('/users', async (req, res) => {
 
 app.listen(port, () => {
   console.log(`Server is running on port ${port}`);
+});
+
+app.get('/posts/friends/:userId', async (req, res) => {
+  try {
+    const { userId } = req.params;
+
+    const user = await User.findById(userId).populate('friends');
+
+    if (!user) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+
+    const friendIds = user.friends.map(friend => friend._id);
+    friendIds.push(user._id); // include user's own posts
+
+    const posts = await Post.find({ userId: { $in: friendIds } })
+      .sort({ createdAt: -1 })
+      .populate('userId', 'username');
+
+    res.json(posts);
+  } catch (err) {
+    console.error('Error fetching feed posts:', err);
+    res.status(500).json({ message: 'Server error' });
+  }
 });
