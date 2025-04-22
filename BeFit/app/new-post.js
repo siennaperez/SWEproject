@@ -78,13 +78,24 @@ export default function NewPost() {
         name: 'image.jpg',  // You can set the file name dynamically
         type: 'image/jpeg',
       });
-  
+        const now = new Date();
+      const createdAtFormatted = now.toLocaleString('en-US', {
+        dateStyle: 'medium',
+        timeStyle: 'short',
+      });
+
       const response = await fetch(`${ip}/posts`, {
         method: 'POST',
         body: formData,
         headers: {
           'Content-Type': 'multipart/form-data',
         },
+        body: JSON.stringify({
+          userId: userId,
+          imageUrl,
+          caption,
+          createdAtFormatted,
+        }),
       });
   
       const data = await response.json();
@@ -135,6 +146,7 @@ const styles = StyleSheet.create({
     paddingTop: 100,
     alignItems: 'center',
     paddingHorizontal: 20,
+    backgroundColor: '#fff',
   },
   title: {
     fontSize: 24,

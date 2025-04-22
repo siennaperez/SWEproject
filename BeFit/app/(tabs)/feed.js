@@ -20,9 +20,8 @@ export default function FeedScreen() {
 
   const fetchAllPosts = async () => {
     try {
-      console.log("Fetching posts from:", `${ip}/posts`);
-      const response = await fetch(`${ip}/posts`);
-      if (!response.ok) throw new Error(`Failed to fetch posts: ${response.status}`);
+      const response = await fetch(`${ip}/posts/friends/${userId}`);
+      if (!response.ok) throw new Error('Failed to fetch posts');
       const data = await response.json();
       console.log('Fetched posts:', data); // Log what you're receiving
       setPosts(data);
@@ -51,8 +50,21 @@ export default function FeedScreen() {
   };
 
   useEffect(() => {
-    fetchAllPosts();
-  }, []);
+    if (userId) {
+      fetchAllPosts();
+    }
+  }, [userId]);
+
+  if (!userId) {
+    return (
+      <View style={styles.container}>
+        <Text style={{ marginTop: 100, textAlign: 'center', fontSize: 16 }}>
+          Loading your feed...
+        </Text>
+      </View>
+    );
+  }
+  
 
   return (
   
@@ -80,7 +92,7 @@ export default function FeedScreen() {
               </View>
             {item.caption && <Text style={styles.caption}>{item.caption}</Text>}
             <Text style={styles.timestamp}>
-              {new Date(item.createdAt).toLocaleDateString()}
+              {item.createdAtFormatted || new Date(item.createdAt).toLocaleString()}
             </Text>
           </ThemedView>
         ))}
