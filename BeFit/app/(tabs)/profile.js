@@ -118,7 +118,7 @@ const changeProfilePhoto = async () => {
   if (!hasPermission) return;
 
   const result = await ImagePicker.launchImageLibraryAsync({
-    mediaTypes: ImagePicker.MediaTypeOptions.Images,
+    mediaTypes: 'images',
     allowsEditing: true,
     aspect: [1, 1],
     quality: 1,
@@ -128,6 +128,23 @@ const changeProfilePhoto = async () => {
   if (!result.canceled) {
     const uri = result.assets[0].uri;
     setUserProfile({ ...userProfile, photo: uri });
+  }
+};
+
+const maxWords = 50;  // Set a limit for the number of words in the bio
+
+// Function to count words
+const countWords = (text) => {
+  return text.trim().split(/\s+/).filter(Boolean).length;
+};
+
+// Handle bio input change with word limit check
+const handleBioChange = (text) => {
+  const wordCount = countWords(text);
+  if (wordCount <= maxWords) {
+    setUserProfile({ ...userProfile, bio: text });  // Update bio if word count is within limit
+  } else {
+    Alert.alert('Limit Reached', `You can only enter up to ${maxWords} words.`);
   }
 };
 
@@ -164,7 +181,7 @@ return (
       <TextInput
         style={[styles.input, styles.multilineInput, { color: '#FFFFFF' }]}
         value={userProfile.bio}
-        onChangeText={(text) => handleInputChange('bio', text)}
+        onChangeText={handleBioChange} 
         placeholder="Enter bio"
         placeholderTextColor="#666"
         multiline
