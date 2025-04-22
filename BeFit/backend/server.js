@@ -23,7 +23,9 @@ const UserSchema = new mongoose.Schema({
   password: { type: String, required: true },
   name: { type: String },
   bio: { type: String }, 
-  profilePhoto: { type: String } // profile image URL
+  profilePhoto: { type: String }, // profile image URL
+  friends: [{ type: mongoose.Schema.Types.ObjectId, ref: 'User' }]
+
 });
 
 const User = mongoose.model('User', UserSchema);
@@ -132,44 +134,6 @@ app.get('/posts', async (req, res) => {
   }
 });
 
-// Search for users by username (for friend search)
-app.get('/users', async (req, res) => {
-  try {
-    const search = req.query.search || '';
-    const users = await User.find({
-      username: { $regex: search, $options: 'i' }
-    }).select('username _id'); // Return only username and _id
-
-    res.json(users);
-  } catch (err) {
-    console.error('Error fetching users:', err);
-    res.status(500).json({ message: 'Server error' });
-  }
-});
-
-
-
-app.listen(port, () => {
-  console.log(`Server is running on port ${port}`);
-});
-
-
-app.get('/posts/:userId', async (req, res) => {
-  try {
-    const userId = req.params.userId;
-
-    const posts = await Post.find({ userId }) // filter by logged-in user's ID
-      .sort({ createdAt: -1 })
-      .populate('userId', 'username');
-
-    res.json(posts);
-  } catch (err) {
-    console.error('Error fetching user-specific posts:', err);
-    res.status(500).json({ message: 'Server error' });
-  }
-});
-
-
 //new endpoint, when users login they can now edit their profile information 
 app.put('/profile', async (req, res) => {
   try {
@@ -187,6 +151,80 @@ app.put('/profile', async (req, res) => {
     res.status(500).json({ message: 'Server error' });
   }
 });
+
+
+
+
+// Search for users by username (for friend search)
+app.get('/users/:id', async (req, res) => {
+  try {
+    const user = await User.findById(req.params.id)
+      .populate('friends', 'username _id profilePhoto'); // Populate friends data
+
+    if (!user) return res.status(404).json({ message: 'User not found' });
+
+    res.json(user);
+  } catch (err) {
+    res.status(500).json({ message: 'Server error' });
+  }
+});
+
+app.get('/posts/:userId', async (req, res) => {
+  try {
+    const userId = req.params.userId;
+
+    const posts = await Post.find({ userId }) // filter by logged-in user's ID
+      .sort({ createdAt: -1 })
+      .populate('userId', 'username');
+
+    res.json(posts);
+  } catch (err) {
+    console.error('Error fetching user-specific posts:', err);
+    res.status(500).json({ message: 'Server error' });
+  }
+});
+
+// POST friends to your array
+app.post('/users/:userId/friends/:friendId', async (req, res) => {
+  const { userId, friendId } = req.params;
+
+  console.log(`Request to add friend: userId = ${userId}, friendId = ${friendId}`);
+
+  try {
+    // Find both user and friend in the database
+    const user = await User.findById(userId);
+    const friend = await User.findById(friendId);
+    
+    // Log the found users
+    console.log('User found:', user);
+    console.log('Friend found:', friend);
+
+    // Check if both user and friend exist
+    if (!user || !friend) {
+      console.error('User or friend not found.');
+      return res.status(404).json({ message: 'User or friend not found' });
+    }
+
+    // Check if friend is already in the user's friend list
+    if (!user.friends.includes(friendId)) {
+      console.log(`Adding friend with ID: ${friendId} to user with ID: ${userId}`);
+      user.friends.push(friendId);
+      await user.save();
+      console.log('User after adding friend:', user);
+    } else {
+      console.log(`Friend with ID: ${friendId} already exists in user ${userId}'s friends list.`);
+    }
+
+    res.status(200).json(user); // Send the updated user object back to the client
+  } catch (err) {
+    console.error('Error adding friend:', err);
+    res.status(500).json({ message: 'Server error' });
+  }
+});
+
+
+
+
 
 app.get('/profile/:userId', async (req, res) => {
   try {
@@ -211,4 +249,27 @@ app.get('/profile/:userId', async (req, res) => {
     console.error('Error fetching profile:', err);
     res.status(500).json({ message: 'Server error' });
   }
+});
+
+
+app.get('/users', async (req, res) => {
+  try {
+    const search = req.query.search || '';
+
+    // Use regex for case-insensitive partial match
+    const users = await User.find({
+      username: { $regex: search, $options: 'i' }
+    }).select('_id username');
+
+    res.json(users);
+  } catch (err) {
+    console.error('Error searching users:', err);
+    res.status(500).json({ message: 'Server error' });
+  }
+});
+
+
+
+app.listen(port, () => {
+  console.log(`Server is running on port ${port}`);
 });
