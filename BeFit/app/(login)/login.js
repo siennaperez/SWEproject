@@ -4,13 +4,7 @@ import { useRouter } from 'expo-router';
 import { ThemedView } from '@/components/ThemedView';
 import { ThemedText } from '../../components/ThemedText';
 import { useUser } from './userContext'; 
-// import Constants from 'expo-constants';
-// const { manifest } = Constants;
-
-// const uri = `http://${manifest.debuggerHost
-//   .split(`:`)
-//   .shift()
-//   .concat(`:3000`)}`; 
+import { getIpAddress } from './ipConfig'; 
 
 const LoginScreen = () => {
   const router = useRouter();
@@ -18,6 +12,7 @@ const LoginScreen = () => {
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
   const { setUserId } = useUser(); 
+  const ip = getIpAddress();
 
   const handleLogin = async () => {
     if (!email || !password) {
@@ -28,8 +23,7 @@ const LoginScreen = () => {
     setLoading(true);
   
     try {
-      //http://10.138.217.191:3000/login  10.20.0.111
-      const response = await fetch('http://10.138.10.93:3000/login', {
+      const response = await fetch(`${ip}/login`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ username: email, password }),

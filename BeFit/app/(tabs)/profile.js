@@ -6,7 +6,7 @@ import { ThemedView } from '@/components/ThemedView';
 import { IconSymbol } from '@/components/ui/IconSymbol';
 import { useUser } from '../(login)/userContext';
 import * as ImagePicker from 'expo-image-picker';
-
+import { getIpAddress } from '../(login)/ipConfig'; 
 
 export default function ProfileScreen() {
   const { userId } = useUser();
@@ -17,6 +17,7 @@ export default function ProfileScreen() {
     numberOfPosts: 0,
     friends: 0,
   });
+  const ip = getIpAddress();
   
   const [isEditing, setIsEditing] = useState(false);
 
@@ -31,7 +32,7 @@ export default function ProfileScreen() {
 
     async function fetchProfile() {
       try {
-        const response = await fetch(`http://10.138.10.93:3000/profile/${userId}`);
+        const response = await fetch(`${ip}/profile/${userId}`);
         console.log('Response:', response); // Debug log
 
         if (!response.ok) {
@@ -58,7 +59,7 @@ export default function ProfileScreen() {
   // Save profile updates to MongoDB
   const saveProfile = async () => {
     try {
-      const response = await fetch(`http://10.138.10.93:3000/profile`, {
+      const response = await fetch(`${ip}/profile`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -86,7 +87,7 @@ export default function ProfileScreen() {
 useEffect(() => {
   const fetchUserPosts = async () => {
     try {
-      const response = await fetch(`http://10.138.10.93:3000/posts/${userId}`);
+      const response = await fetch(`${ip}/posts/${userId}`);
       if (!response.ok) throw new Error('Failed to fetch user posts');
       const data = await response.json();
       setUserPosts(data);

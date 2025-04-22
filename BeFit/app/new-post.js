@@ -3,6 +3,7 @@ import { View, Text, Button, Image, StyleSheet, Alert, TextInput, TouchableWitho
 import * as ImagePicker from 'expo-image-picker';
 import { useRouter } from 'expo-router';
 import { useUser } from './(login)/userContext';
+import { getIpAddress } from './(login)/ipConfig'; 
 
 export default function NewPost() {
   const { userId } = useUser();
@@ -10,6 +11,7 @@ export default function NewPost() {
   const [caption, setCaption] = useState('');
   const [loading, setLoading] = useState(false);
   const router = useRouter();
+  const ip = getIpAddress();
 
   const requestPermissions = async () => {
     const { status } = await ImagePicker.requestCameraPermissionsAsync();
@@ -68,7 +70,7 @@ export default function NewPost() {
     try {
       const imageUrl = image;
 
-      const response = await fetch('http://10.138.10.93:3000/posts', {
+      const response = await fetch(`${ip}/posts`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
