@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { StyleSheet, TextInput, TouchableOpacity, Text } from 'react-native';
+import { StyleSheet, TextInput, View, TouchableOpacity, Text } from 'react-native';
 import { getIpAddress } from '../(login)/ipConfig'; 
 import { useUser } from '../(login)/userContext';
 import ParallaxScrollView from '@/components/ParallaxScrollView'; // Adjust import path based on your file structure
@@ -85,12 +85,20 @@ export default function HomeScreen() {
   }, [userId]); // Added userId as a dependency to refetch friends when userId changes
 
   return (
-    <ParallaxScrollView headerBackgroundColor={{ light: '#A1CEDC', dark: '#1D3D47' }}>
-      <ThemedView style={styles.titleContainer}>
-        <ThemedText type="title">Friends</ThemedText>
+    
+    <ParallaxScrollView
+    headerBackgroundColor={{ light: '#000000', dark: '#000000' }}
+    headerImage={
+      <ThemedView style={{ height: 250, justifyContent: 'center', alignItems: 'center', backgroundColor: 'black'}}>
+        <ThemedText type="BeFit" style={{ color: 'white', fontSize: 70 }}>BEFIT</ThemedText>
       </ThemedView>
-
+    } >
+       <ThemedView style={styles.titleContainer}>
+        <ThemedText type="title"style={{ fontSize: 33, alignSelf: 'center' }}>Friends</ThemedText>
+      </ThemedView>
+    
       <ThemedView style={styles.stepContainer}>
+
         <TextInput
           placeholder="Search for a friend..."
           value={search}
@@ -104,18 +112,30 @@ export default function HomeScreen() {
           </TouchableOpacity>
         ))}
 
-        <ThemedText type="subtitle">Your Friends:</ThemedText>
+        <ThemedText
+          type="title"
+          style={{
+            fontSize: 25,
+            marginTop: 30,
+            position: 'relative',
+            left: -10,
+
+          }}
+        >
+          Your Friends:
+        </ThemedText>
         {friends.map(friend => (
           <Text key={friend._id} style={styles.friendItem}>{friend.username}</Text>
         ))}
       </ThemedView>
     </ParallaxScrollView>
+
   );
 }
 
 const styles = StyleSheet.create({
-  titleContainer: { flexDirection: 'row', alignItems: 'center', gap: 8 },
-  stepContainer: { gap: 8, marginBottom: 8, padding: 20 },
+  titleContainer: { flexDirection: 'row', alignItems: 'center', gap: 8, },
+  stepContainer: { gap: 6, marginBottom: 10, padding: 8},
   input: {
     borderColor: '#ccc',
     borderWidth: 1,
@@ -131,7 +151,8 @@ const styles = StyleSheet.create({
     marginBottom: 5,
   },
   friendItem: {
+    fontStyle: 'italic',
     padding: 6,
-    color: '#444',
+    color: '#fff',
   },
 });
