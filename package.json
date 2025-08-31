@@ -6,7 +6,7 @@
     "expo": "^52.0.35",
     "express": "^4.21.2",
     "jsonwebtoken": "^9.0.2",
-    "mongodb": "^6.14.2",
+    "mongodb": "^6.18.0",
     "mongoose": "^8.12.1",
     "expo-image-picker": "~16.0.6",
     "expo-camera": "~16.0.18"
